@@ -343,9 +343,21 @@ tr:hover td { background: #161b22; }
     <button class="qbtn" onclick="setQuote('BTC', this)">BTC</button>
   </div>
 
-  <div style="margin-left:4px;display:flex;gap:4px;font-size:11px;color:#8b949e;align-items:center">
+  <div class="filter-group">
+    Min Bid farkı:
+    <input type="number" id="minBidDiff" value="0" step="0.01" min="0" oninput="applyFilters()"> $
+  </div>
+
+  <div class="filter-group">
+    Min Ask farkı:
+    <input type="number" id="minAskDiff" value="0" step="0.01" min="0" oninput="applyFilters()"> $
+  </div>
+
+  <div style="display:flex;gap:4px;font-size:11px;color:#8b949e;align-items:center">
     Sırala:
     <button class="sort-btn active" id="sortSpread" onclick="setSort('spread', this)">Spread %</button>
+    <button class="sort-btn" id="sortBidDiff" onclick="setSort('bidDiff', this)">Bid Farkı</button>
+    <button class="sort-btn" id="sortAskDiff" onclick="setSort('askDiff', this)">Ask Farkı</button>
     <button class="sort-btn" id="sortSymbol" onclick="setSort('symbol', this)">Symbol</button>
     <button class="sort-btn" id="sortBnb" onclick="setSort('bnb', this)">Binance $</button>
   </div>
@@ -382,12 +394,15 @@ tr:hover td { background: #161b22; }
           Symbol <span class="arrow" id="arr-symbol"></span>
         </th>
         <th onclick="setSort('bnb', document.getElementById('sortBnb'))">
-          Binance Mid <span class="arrow" id="arr-bnb"></span>
+          Binance Fiyat <span class="arrow" id="arr-bnb"></span>
         </th>
-        <th>Binance Bid / Ask</th>
-        <th>Darkex Mid</th>
-        <th>Darkex Bid / Ask</th>
-        <th>Fark ($)</th>
+        <th>Darkex Fiyat</th>
+        <th onclick="setSort('bidDiff', document.getElementById('sortBidDiff'))">
+          Bid Farkı ($) <span class="arrow" id="arr-bidDiff"></span>
+        </th>
+        <th onclick="setSort('askDiff', document.getElementById('sortAskDiff'))">
+          Ask Farkı ($) <span class="arrow" id="arr-askDiff"></span>
+        </th>
         <th onclick="setSort('spread', document.getElementById('sortSpread'))">
           Spread % <span class="arrow" id="arr-spread">↓</span>
         </th>
@@ -515,13 +530,17 @@ function buildComparison() {
     const dx  = dxRaw[sym];
     if (!bnb?.mid || !dx?.mid) continue;
 
-    const diff      = dx.mid - bnb.mid;
-    const spreadPct = Math.abs(diff / bnb.mid) * 100;
+    const bidDiff   = dx.bid - bnb.bid;
+    const askDiff   = dx.ask - bnb.ask;
+    const midDiff   = dx.mid - bnb.mid;
+    const spreadPct = Math.abs(midDiff / bnb.mid) * 100;
+    const bnbSpread = bnb.ask - bnb.bid;
+    const dxSpread  = dx.ask  - dx.bid;
 
-    allData.push({ sym, bnb, dx, diff, spreadPct });
+    allData.push({ sym, bnb, dx, bidDiff, askDiff, midDiff, spreadPct, bnbSpread, dxSpread });
   }
 
-  // flash detection (mid price üzerinden)
+  // flash detection
   allData.forEach(row => {
     const prev = prevPrices[row.sym];
     row._flash = prev ? (row.dx.mid > prev ? 'up' : row.dx.mid < prev ? 'down' : null) : null;
@@ -558,17 +577,24 @@ function applyFilters() {
   const minSpread = parseFloat(document.getElementById('minSpread').value) || 0;
   const hideSmall = document.getElementById('hideSmall').checked;
 
+  const minBidDiff = parseFloat(document.getElementById('minBidDiff').value) || 0;
+  const minAskDiff = parseFloat(document.getElementById('minAskDiff').value) || 0;
+
   filtered = allData.filter(r => {
     if (search && !r.sym.includes(search)) return false;
     if (quoteFilter !== 'ALL' && !r.sym.endsWith(quoteFilter)) return false;
     if (r.spreadPct < minSpread) return false;
     if (hideSmall && r.spreadPct < 0.01) return false;
+    if (Math.abs(r.bidDiff) < minBidDiff) return false;
+    if (Math.abs(r.askDiff) < minAskDiff) return false;
     return true;
   });
 
   filtered.sort((a, b) => {
-    if (sortKey === 'symbol') return sortDir * a.sym.localeCompare(b.sym);
-    if (sortKey === 'bnb')    return sortDir * (a.bnb.mid - b.bnb.mid);
+    if (sortKey === 'symbol')  return sortDir * a.sym.localeCompare(b.sym);
+    if (sortKey === 'bnb')     return sortDir * (a.bnb.mid - b.bnb.mid);
+    if (sortKey === 'bidDiff') return sortDir * (Math.abs(a.bidDiff) - Math.abs(b.bidDiff));
+    if (sortKey === 'askDiff') return sortDir * (Math.abs(a.askDiff) - Math.abs(b.askDiff));
     return sortDir * (a.spreadPct - b.spreadPct);
   });
 
@@ -591,7 +617,7 @@ function setSort(key, el) {
   document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
   el?.classList.add('active');
   // arrows
-  ['symbol','bnb','spread'].forEach(k => {
+  ['symbol','bnb','bidDiff','askDiff','spread'].forEach(k => {
     const a = document.getElementById('arr-' + k);
     if (a) a.textContent = k === sortKey ? (sortDir === -1 ? '↓' : '↑') : '';
   });
@@ -646,6 +672,9 @@ function renderTable() {
     const diffColor = row.diff > 0 ? '#3fb950' : row.diff < 0 ? '#f85149' : '#8b949e';
     const flashClass = row._flash === 'up' ? 'flash-up' : row._flash === 'down' ? 'flash-down' : '';
 
+    const bidDiffColor = Math.abs(row.bidDiff) < 0.01 ? '#8b949e' : row.bidDiff > 0 ? '#3fb950' : '#f85149';
+    const askDiffColor = Math.abs(row.askDiff) < 0.01 ? '#8b949e' : row.askDiff > 0 ? '#3fb950' : '#f85149';
+
     return `<tr class="${flashClass}">
       <td>
         <div class="symbol-cell">
@@ -654,10 +683,9 @@ function renderTable() {
         </div>
       </td>
       <td style="color:#f0b90b;font-weight:700">${fmtPrice(row.bnb.mid)}</td>
-      <td style="color:#8b949e;font-size:11px">${fmtPrice(row.bnb.bid)}<br>${fmtPrice(row.bnb.ask)}</td>
       <td style="color:#a78bfa;font-weight:700">${fmtPrice(row.dx.mid)}</td>
-      <td style="color:#8b949e;font-size:11px">${fmtPrice(row.dx.bid)}<br>${fmtPrice(row.dx.ask)}</td>
-      <td style="color:${diffColor}">${fmtDiff(row.diff)}</td>
+      <td style="color:${bidDiffColor};font-weight:600">${fmtDiff(row.bidDiff)}</td>
+      <td style="color:${askDiffColor};font-weight:600">${fmtDiff(row.askDiff)}</td>
       <td style="color:${color};font-weight:700">${row.spreadPct.toFixed(4)}%</td>
       <td>
         <div class="diff-bar-cell">
