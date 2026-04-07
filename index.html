@@ -382,9 +382,11 @@ tr:hover td { background: #161b22; }
           Symbol <span class="arrow" id="arr-symbol"></span>
         </th>
         <th onclick="setSort('bnb', document.getElementById('sortBnb'))">
-          Binance Fiyat <span class="arrow" id="arr-bnb"></span>
+          Binance Mid <span class="arrow" id="arr-bnb"></span>
         </th>
-        <th>Darkex Fiyat</th>
+        <th>Binance Bid / Ask</th>
+        <th>Darkex Mid</th>
+        <th>Darkex Bid / Ask</th>
         <th>Fark ($)</th>
         <th onclick="setSort('spread', document.getElementById('sortSpread'))">
           Spread % <span class="arrow" id="arr-spread">↓</span>
@@ -403,8 +405,8 @@ tr:hover td { background: #161b22; }
 
 <script>
 // ─── Config ──────────────────────────────────────────────
-const BINANCE_URL = 'https://fapi.binance.com/fapi/v1/ticker/price';
-const DARKEX_URL  = 'https://trade-api.darkex.live/fapi/v1/ticker/price';
+const BINANCE_URL = 'https://fapi.binance.com/fapi/v1/ticker/bookTicker';
+const DARKEX_URL  = 'https://trade-api.darkex.live/fapi/v1/ticker/bookTicker';
 const INTERVAL    = 10; // seconds
 
 // ─── State ───────────────────────────────────────────────
@@ -459,7 +461,10 @@ async function fetchAll() {
     // Binance
     if (bnbRes.status === 'fulfilled') {
       bnbRaw = {};
-      bnbRes.value.data.forEach(t => { bnbRaw[t.symbol] = parseFloat(t.price); });
+      bnbRes.value.data.forEach(t => {
+        const bid = parseFloat(t.bidPrice), ask = parseFloat(t.askPrice);
+        bnbRaw[t.symbol] = { bid, ask, mid: (bid + ask) / 2 };
+      });
       setStatus('bnb', true, bnbRes.value.ms + 'ms');
       document.getElementById('sBnbCount').textContent = Object.keys(bnbRaw).length;
     } else {
@@ -469,7 +474,10 @@ async function fetchAll() {
     // Darkex
     if (dxRes.status === 'fulfilled') {
       dxRaw = {};
-      dxRes.value.data.forEach(t => { dxRaw[t.symbol] = parseFloat(t.price); });
+      dxRes.value.data.forEach(t => {
+        const bid = parseFloat(t.bidPrice), ask = parseFloat(t.askPrice);
+        dxRaw[t.symbol] = { bid, ask, mid: (bid + ask) / 2 };
+      });
       setStatus('dx', true, dxRes.value.ms + 'ms');
       document.getElementById('sDxCount').textContent = Object.keys(dxRaw).length;
     } else {
@@ -505,19 +513,19 @@ function buildComparison() {
     if (!(sym in bnbRaw)) continue;
     const bnb = bnbRaw[sym];
     const dx  = dxRaw[sym];
-    if (!bnb || !dx) continue;
+    if (!bnb?.mid || !dx?.mid) continue;
 
-    const diff    = dx - bnb;
-    const spreadPct = Math.abs(diff / bnb) * 100;
+    const diff      = dx.mid - bnb.mid;
+    const spreadPct = Math.abs(diff / bnb.mid) * 100;
 
     allData.push({ sym, bnb, dx, diff, spreadPct });
   }
 
-  // flash detection
+  // flash detection (mid price üzerinden)
   allData.forEach(row => {
     const prev = prevPrices[row.sym];
-    row._flash = prev ? (row.dx > prev ? 'up' : row.dx < prev ? 'down' : null) : null;
-    prevPrices[row.sym] = row.dx;
+    row._flash = prev ? (row.dx.mid > prev ? 'up' : row.dx.mid < prev ? 'down' : null) : null;
+    prevPrices[row.sym] = row.dx.mid;
   });
 }
 
@@ -560,7 +568,7 @@ function applyFilters() {
 
   filtered.sort((a, b) => {
     if (sortKey === 'symbol') return sortDir * a.sym.localeCompare(b.sym);
-    if (sortKey === 'bnb')    return sortDir * (a.bnb - b.bnb);
+    if (sortKey === 'bnb')    return sortDir * (a.bnb.mid - b.bnb.mid);
     return sortDir * (a.spreadPct - b.spreadPct);
   });
 
@@ -599,7 +607,7 @@ function fmtPrice(p) {
   return p.toFixed(8);
 }
 
-function fmtDiff(d, pct) {
+function fmtDiff(d) {
   const sign = d >= 0 ? '+' : '';
   return `${sign}${fmtPrice(d)}`;
 }
@@ -627,7 +635,7 @@ function parseQuote(sym) {
 function renderTable() {
   const el = document.getElementById('tableBody');
   if (!filtered.length) {
-    el.innerHTML = '<tr><td colspan="7" class="no-data">Eşleşen market bulunamadı</td></tr>';
+    el.innerHTML = '<tr><td colspan="9" class="no-data">Eşleşen market bulunamadı</td></tr>';
     return;
   }
 
@@ -645,9 +653,11 @@ function renderTable() {
           <span class="symbol-quote">${quote}</span>
         </div>
       </td>
-      <td style="color:#f0b90b">${fmtPrice(row.bnb)}</td>
-      <td style="color:#a78bfa">${fmtPrice(row.dx)}</td>
-      <td style="color:${diffColor}">${fmtDiff(row.diff, row.spreadPct)}</td>
+      <td style="color:#f0b90b;font-weight:700">${fmtPrice(row.bnb.mid)}</td>
+      <td style="color:#8b949e;font-size:11px">${fmtPrice(row.bnb.bid)}<br>${fmtPrice(row.bnb.ask)}</td>
+      <td style="color:#a78bfa;font-weight:700">${fmtPrice(row.dx.mid)}</td>
+      <td style="color:#8b949e;font-size:11px">${fmtPrice(row.dx.bid)}<br>${fmtPrice(row.dx.ask)}</td>
+      <td style="color:${diffColor}">${fmtDiff(row.diff)}</td>
       <td style="color:${color};font-weight:700">${row.spreadPct.toFixed(4)}%</td>
       <td>
         <div class="diff-bar-cell">
