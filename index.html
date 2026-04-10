@@ -3,342 +3,200 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Binance vs Darkex — Futures Karşılaştırma</title>
+<title>Binance vs Darkex Monitor</title>
 <style>
-* { margin: 0; padding: 0; box-sizing: border-box; }
-body { background: #0d1117; color: #e6edf3; font-family: 'Segoe UI', system-ui, monospace; font-size: 13px; }
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:#0d1117; color:#e6edf3; font-family:'Segoe UI',system-ui,monospace; font-size:13px; }
 
-/* Header */
+/* ── Header ── */
 .header {
-  background: #161b22;
-  border-bottom: 1px solid #30363d;
-  padding: 10px 20px;
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  position: sticky;
-  top: 0;
-  z-index: 100;
+  background:#161b22; border-bottom:1px solid #30363d;
+  padding:10px 20px; display:flex; align-items:center; gap:16px;
+  position:sticky; top:0; z-index:100;
 }
-.header h1 { font-size: 15px; font-weight: 700; color: #e6edf3; }
-.logo { display: flex; align-items: center; gap: 8px; }
-.dot { width: 8px; height: 8px; border-radius: 50%; }
-.dot-bnb { background: #f0b90b; }
-.dot-darkex { background: #7c3aed; }
-.sep { color: #30363d; font-size: 18px; }
+.logo { display:flex; align-items:center; gap:8px; }
+.dot { width:8px; height:8px; border-radius:50%; }
+.dot-bnb { background:#f0b90b; }
+.dot-dx  { background:#7c3aed; }
+.sep { color:#30363d; font-size:18px; }
+.header-right { margin-left:auto; display:flex; align-items:center; gap:10px; }
+.stat-pill { background:#21262d; border:1px solid #30363d; border-radius:20px; padding:4px 12px; font-size:11px; color:#8b949e; }
+.stat-pill span { color:#e6edf3; font-weight:600; }
 
-.countdown-ring {
-  width: 32px; height: 32px;
-  position: relative;
-  flex-shrink: 0;
-}
-.countdown-ring svg { transform: rotate(-90deg); }
-.countdown-ring circle { fill: none; stroke: #30363d; stroke-width: 3; }
-.countdown-ring .progress { stroke: #58a6ff; stroke-linecap: round; transition: stroke-dashoffset 1s linear; }
-.countdown-num {
-  position: absolute; inset: 0;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 10px; font-weight: 700; color: #58a6ff;
-}
+/* Countdown */
+.countdown-ring { width:32px; height:32px; position:relative; flex-shrink:0; }
+.countdown-ring svg { transform:rotate(-90deg); }
+.countdown-ring circle { fill:none; stroke:#30363d; stroke-width:3; }
+.countdown-ring .progress { stroke:#58a6ff; stroke-linecap:round; transition:stroke-dashoffset 1s linear; }
+.countdown-num { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:700; color:#58a6ff; }
 
-.header-right { margin-left: auto; display: flex; align-items: center; gap: 12px; }
-.stat-pill {
-  background: #21262d;
-  border: 1px solid #30363d;
-  border-radius: 20px;
-  padding: 4px 12px;
-  font-size: 11px;
-  color: #8b949e;
+/* ── Page Tabs ── */
+.page-tabs { display:flex; background:#161b22; border-bottom:2px solid #30363d; padding:0 20px; }
+.page-tab {
+  padding:10px 20px; cursor:pointer; color:#8b949e; font-size:13px; font-weight:600;
+  border-bottom:3px solid transparent; margin-bottom:-2px; transition:.15s; user-select:none;
 }
-.stat-pill span { color: #e6edf3; font-weight: 600; }
+.page-tab:hover { color:#c9d1d9; }
+.page-tab.active { color:#e6edf3; border-bottom-color:#58a6ff; }
+.page-tab.arb-tab.active { border-bottom-color:#a78bfa; color:#a78bfa; }
 
-/* Controls */
-.controls {
-  background: #161b22;
-  border-bottom: 1px solid #30363d;
-  padding: 8px 20px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-.search-wrap { position: relative; }
-.search-wrap input {
-  background: #0d1117;
-  border: 1px solid #30363d;
-  color: #e6edf3;
-  padding: 6px 10px 6px 30px;
-  border-radius: 6px;
-  font-size: 12px;
-  width: 180px;
-  outline: none;
-}
-.search-wrap input:focus { border-color: #58a6ff; }
-.search-icon { position: absolute; left: 9px; top: 50%; transform: translateY(-50%); color: #8b949e; font-size: 13px; pointer-events: none; }
+/* ── Summary ── */
+.summary { display:grid; grid-template-columns:repeat(auto-fill,minmax(155px,1fr)); gap:8px; padding:10px 20px; background:#0d1117; border-bottom:1px solid #21262d; }
+.s-card { background:#161b22; border:1px solid #30363d; border-radius:8px; padding:10px 12px; }
+.s-label { font-size:10px; color:#8b949e; text-transform:uppercase; letter-spacing:.6px; margin-bottom:4px; }
+.s-val   { font-size:18px; font-weight:700; font-family:monospace; }
+.s-sub   { font-size:10px; color:#8b949e; margin-top:2px; }
 
-.filter-group { display: flex; align-items: center; gap: 6px; font-size: 11px; color: #8b949e; }
-.filter-group input[type=number] {
-  background: #0d1117;
-  border: 1px solid #30363d;
-  color: #e6edf3;
-  padding: 6px 8px;
-  border-radius: 6px;
-  font-size: 12px;
-  width: 70px;
-  outline: none;
-}
-.filter-group input:focus { border-color: #58a6ff; }
+/* ── Controls ── */
+.controls { background:#161b22; border-bottom:1px solid #30363d; padding:8px 20px; display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+.search-wrap { position:relative; }
+.search-wrap input { background:#0d1117; border:1px solid #30363d; color:#e6edf3; padding:6px 10px 6px 28px; border-radius:6px; font-size:12px; width:170px; outline:none; }
+.search-wrap input:focus { border-color:#58a6ff; }
+.search-icon { position:absolute; left:8px; top:50%; transform:translateY(-50%); color:#8b949e; pointer-events:none; }
+.filter-group { display:flex; align-items:center; gap:5px; font-size:11px; color:#8b949e; }
+.filter-group input[type=number] { background:#0d1117; border:1px solid #30363d; color:#e6edf3; padding:5px 6px; border-radius:6px; font-size:12px; width:65px; outline:none; }
+.filter-group input:focus { border-color:#58a6ff; }
+.qbtn { background:#21262d; border:1px solid #30363d; color:#8b949e; padding:4px 9px; border-radius:4px; font-size:11px; cursor:pointer; transition:.15s; }
+.qbtn.active { background:#1a2a3a; border-color:#58a6ff; color:#58a6ff; }
+.sort-btn { background:#21262d; border:1px solid #30363d; color:#8b949e; padding:5px 10px; border-radius:6px; font-size:11px; cursor:pointer; transition:.15s; }
+.sort-btn.active { background:#1a2a3a; border-color:#58a6ff; color:#58a6ff; }
+.sort-btn:hover:not(.active) { background:#30363d; color:#e6edf3; }
+.refresh-btn { background:#238636; border:none; color:#fff; padding:6px 14px; border-radius:6px; font-size:12px; font-weight:600; cursor:pointer; }
+.refresh-btn:hover { background:#2ea043; }
+.rules-btn { background:#1a2a3a; border:1px solid #58a6ff; color:#58a6ff; padding:5px 12px; border-radius:6px; font-size:11px; font-weight:600; cursor:pointer; transition:.15s; }
+.rules-btn:hover { background:#1f3a5a; }
 
-.sort-btn {
-  background: #21262d;
-  border: 1px solid #30363d;
-  color: #8b949e;
-  padding: 5px 10px;
-  border-radius: 6px;
-  font-size: 11px;
-  cursor: pointer;
-  transition: .15s;
-}
-.sort-btn.active { background: #1a2a3a; border-color: #58a6ff; color: #58a6ff; }
-.sort-btn:hover:not(.active) { background: #30363d; color: #e6edf3; }
-
-.refresh-btn {
-  background: #238636;
-  border: none;
-  color: #fff;
-  padding: 6px 14px;
-  border-radius: 6px;
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: .15s;
-}
-.refresh-btn:hover { background: #2ea043; }
-
-.quote-filter { display: flex; gap: 4px; }
-.qbtn {
-  background: #21262d;
-  border: 1px solid #30363d;
-  color: #8b949e;
-  padding: 4px 9px;
-  border-radius: 4px;
-  font-size: 11px;
-  cursor: pointer;
-  transition: .15s;
-}
-.qbtn.active { background: #1a2a3a; border-color: #58a6ff; color: #58a6ff; }
-
-/* Status bar */
-.status-bar {
-  display: flex;
-  gap: 16px;
-  padding: 6px 20px;
-  background: #0d1117;
-  border-bottom: 1px solid #21262d;
-  font-size: 11px;
-  color: #8b949e;
-}
-.status-item { display: flex; align-items: center; gap: 5px; }
-.pulse { width: 6px; height: 6px; border-radius: 50%; background: #3fb950; animation: pulse 2s infinite; }
-.pulse.err { background: #f85149; animation: none; }
+/* ── Status Bar ── */
+.status-bar { display:flex; gap:16px; padding:5px 20px; background:#0d1117; border-bottom:1px solid #161b22; font-size:11px; color:#8b949e; }
+.status-item { display:flex; align-items:center; gap:5px; }
+.pulse { width:6px; height:6px; border-radius:50%; background:#3fb950; animation:pulse 2s infinite; }
+.pulse.err { background:#f85149; animation:none; }
 @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
 
-/* Table */
-.table-wrap { overflow-x: auto; }
-table { width: 100%; border-collapse: collapse; }
-thead { position: sticky; top: 0; z-index: 10; }
-th {
-  background: #161b22;
-  padding: 8px 12px;
-  text-align: right;
-  font-size: 10px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: .8px;
-  color: #8b949e;
-  border-bottom: 1px solid #30363d;
-  cursor: pointer;
-  white-space: nowrap;
-  user-select: none;
-}
-th:first-child { text-align: left; }
-th:hover { color: #c9d1d9; }
-th.sorted { color: #58a6ff; }
-th .arrow { font-size: 9px; margin-left: 3px; }
+/* ── Table ── */
+.table-wrap { overflow-x:auto; }
+table { width:100%; border-collapse:collapse; }
+thead { position:sticky; top:0; z-index:10; }
+th { background:#161b22; padding:7px 12px; text-align:right; font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:.8px; color:#8b949e; border-bottom:1px solid #30363d; cursor:pointer; white-space:nowrap; user-select:none; }
+th:first-child { text-align:left; }
+th:hover { color:#c9d1d9; }
+th .arrow { font-size:9px; margin-left:2px; }
+td { padding:6px 12px; text-align:right; border-bottom:1px solid #161b22; font-family:monospace; font-size:12px; white-space:nowrap; }
+td:first-child { text-align:left; }
+tr:hover td { background:#161b22; }
 
-td {
-  padding: 7px 12px;
-  text-align: right;
-  border-bottom: 1px solid #161b22;
-  font-family: monospace;
-  font-size: 12px;
-  white-space: nowrap;
-}
-td:first-child { text-align: left; }
-tr:hover td { background: #161b22; }
+.symbol-cell { display:flex; align-items:center; gap:7px; }
+.symbol-name { font-weight:700; font-size:13px; color:#e6edf3; }
+.symbol-quote { font-size:10px; color:#8b949e; background:#21262d; padding:1px 5px; border-radius:3px; }
 
-.symbol-cell { display: flex; align-items: center; gap: 8px; }
-.symbol-name { font-weight: 700; font-size: 13px; color: #e6edf3; }
-.symbol-quote { font-size: 10px; color: #8b949e; background: #21262d; padding: 1px 5px; border-radius: 3px; }
-.bell-btn {
-  background: #21262d; border: 1px solid #30363d; cursor: pointer;
-  font-size: 14px; padding: 3px 7px; border-radius: 6px; line-height: 1;
-  transition: all .15s;
-}
-.bell-btn:hover { background: #30363d; transform: scale(1.1); }
-.bell-btn.muted { background: #1a1a1a; border-color: #21262d; opacity: .4; filter: grayscale(1); }
+.diff-bar-bg { width:55px; height:4px; background:#21262d; border-radius:2px; overflow:hidden; display:inline-block; vertical-align:middle; }
+.diff-bar-fill { height:100%; border-radius:2px; }
 
-.diff-bar-cell { display: flex; align-items: center; gap: 6px; justify-content: flex-end; }
-.diff-bar-bg { width: 60px; height: 4px; background: #21262d; border-radius: 2px; overflow: hidden; }
-.diff-bar-fill { height: 100%; border-radius: 2px; }
+.badge { display:inline-block; padding:2px 6px; border-radius:3px; font-size:10px; font-weight:700; }
+.badge-green  { background:#1a3a1e; color:#3fb950; }
+.badge-yellow { background:#2d2415; color:#e3b341; }
+.badge-red    { background:#3a1a1a; color:#f85149; }
+.badge-purple { background:#2a1a3a; color:#a78bfa; }
+.badge-blue   { background:#1a2a3a; color:#58a6ff; }
 
-.badge {
-  display: inline-block;
-  padding: 2px 6px;
-  border-radius: 3px;
-  font-size: 10px;
-  font-weight: 700;
-}
-.badge-green { background: #1a3a1e; color: #3fb950; }
-.badge-yellow { background: #2d2415; color: #e3b341; }
-.badge-red { background: #3a1a1a; color: #f85149; }
+.no-data { text-align:center; padding:50px; color:#484f58; }
 
-.no-data { text-align: center; padding: 60px; color: #484f58; }
-
-/* Highlight flash */
 @keyframes flash-green { 0%{background:#1a3a1e} 100%{background:transparent} }
 @keyframes flash-red   { 0%{background:#3a1a1a} 100%{background:transparent} }
-.flash-up td   { animation: flash-green .6s ease; }
-.flash-down td { animation: flash-red   .6s ease; }
+.flash-up td   { animation:flash-green .6s ease; }
+.flash-down td { animation:flash-red   .6s ease; }
 
-/* Summary cards */
-.summary {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-  gap: 8px;
-  padding: 12px 20px;
-  background: #0d1117;
-  border-bottom: 1px solid #21262d;
-}
-.s-card {
-  background: #161b22;
-  border: 1px solid #30363d;
-  border-radius: 8px;
-  padding: 10px 12px;
-}
-.s-card .s-label { font-size: 10px; color: #8b949e; text-transform: uppercase; letter-spacing: .6px; margin-bottom: 4px; }
-.s-card .s-val { font-size: 18px; font-weight: 700; font-family: monospace; color: #e6edf3; }
-.s-card .s-sub { font-size: 10px; color: #8b949e; margin-top: 2px; }
+/* Bell */
+.bell-btn { background:#21262d; border:1px solid #30363d; cursor:pointer; font-size:13px; padding:2px 7px; border-radius:6px; transition:all .15s; }
+.bell-btn:hover { background:#30363d; transform:scale(1.1); }
+.bell-btn.muted { background:#1a1a1a; border-color:#21262d; opacity:.35; filter:grayscale(1); }
 
-/* Toast */
-#toasts { position: fixed; bottom: 16px; right: 16px; display: flex; flex-direction: column; gap: 6px; z-index: 9999; }
-.toast {
-  background: #21262d;
-  border: 1px solid #30363d;
-  border-radius: 8px;
-  padding: 8px 14px;
-  font-size: 12px;
-  min-width: 240px;
-  animation: toastIn .2s ease;
-}
-.toast.warn { border-color: #e3b341; }
-.toast.err { border-color: #f85149; }
-@keyframes toastIn { from{transform:translateY(10px);opacity:0} to{transform:translateY(0);opacity:1} }
+/* ── Alert Panel ── */
+.alert-panel { border-top:2px solid #da3633; background:#0d1117; }
+.alert-panel-header { display:flex; align-items:center; gap:10px; padding:9px 20px; background:#161b22; border-bottom:1px solid #30363d; cursor:pointer; user-select:none; }
+.alert-panel-header:hover { background:#1c2128; }
+.alert-count-badge { background:#da3633; color:#fff; border-radius:10px; padding:1px 8px; font-size:11px; font-weight:700; }
+.alert-threshold-cfg { margin-left:auto; display:flex; align-items:center; gap:8px; font-size:11px; color:#8b949e; }
+.alert-threshold-cfg input { background:#0d1117; border:1px solid #30363d; color:#e6edf3; padding:3px 6px; border-radius:4px; font-size:11px; width:55px; outline:none; }
+.alert-clear-btn { background:#21262d; border:1px solid #30363d; color:#8b949e; padding:3px 10px; border-radius:4px; font-size:11px; cursor:pointer; }
+.alert-clear-btn:hover { background:#30363d; color:#e6edf3; }
+.alert-table-wrap { max-height:240px; overflow-y:auto; }
+.alert-table-wrap table { width:100%; border-collapse:collapse; }
+.alert-table-wrap th { background:#0d1117; padding:5px 12px; text-align:left; font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:.8px; color:#8b949e; border-bottom:1px solid #21262d; position:sticky; top:0; cursor:default; }
+.alert-table-wrap td { padding:5px 12px; border-bottom:1px solid #161b22; font-family:monospace; font-size:12px; }
+.alert-row-new td { animation:flash-red .8s ease; }
+.alert-empty { text-align:center; padding:20px; color:#484f58; font-size:12px; }
 
-/* Loading overlay */
-.loading {
-  position: fixed; inset: 0; background: rgba(13,17,23,.85);
-  display: flex; align-items: center; justify-content: center;
-  z-index: 200; flex-direction: column; gap: 12px;
-}
-.spinner {
-  width: 36px; height: 36px;
-  border: 3px solid #30363d;
-  border-top-color: #58a6ff;
-  border-radius: 50%;
-  animation: spin .8s linear infinite;
-}
+/* ── Alert Rules Modal ── */
+.modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,.6); z-index:300; display:flex; align-items:center; justify-content:center; }
+.modal { background:#161b22; border:1px solid #30363d; border-radius:10px; width:480px; max-height:80vh; display:flex; flex-direction:column; }
+.modal-header { display:flex; align-items:center; gap:10px; padding:14px 18px; border-bottom:1px solid #30363d; }
+.modal-header h3 { font-size:14px; font-weight:700; }
+.modal-close { margin-left:auto; background:none; border:none; color:#8b949e; font-size:18px; cursor:pointer; padding:0 4px; }
+.modal-close:hover { color:#e6edf3; }
+.modal-body { padding:14px 18px; overflow-y:auto; flex:1; }
+.rule-row { display:flex; align-items:center; gap:8px; padding:6px 0; border-bottom:1px solid #21262d; }
+.rule-row:last-child { border-bottom:none; }
+.rule-sym { font-weight:700; font-size:13px; flex:1; font-family:monospace; }
+.rule-input { background:#0d1117; border:1px solid #30363d; color:#e6edf3; padding:4px 8px; border-radius:5px; font-size:12px; width:70px; outline:none; text-align:right; }
+.rule-input:focus { border-color:#58a6ff; }
+.rule-del { background:#3a1a1a; border:1px solid #6a2d2d; color:#f85149; padding:3px 8px; border-radius:4px; font-size:11px; cursor:pointer; }
+.rule-del:hover { background:#f85149; color:#fff; }
+.modal-add { display:flex; gap:8px; margin-top:12px; padding-top:12px; border-top:1px solid #30363d; }
+.modal-add select { flex:1; background:#0d1117; border:1px solid #30363d; color:#e6edf3; padding:6px 8px; border-radius:6px; font-size:12px; outline:none; }
+.modal-add input { width:70px; background:#0d1117; border:1px solid #30363d; color:#e6edf3; padding:6px 8px; border-radius:6px; font-size:12px; outline:none; text-align:right; }
+.modal-add button { background:#238636; border:none; color:#fff; padding:6px 14px; border-radius:6px; font-size:12px; font-weight:600; cursor:pointer; }
+.modal-add button:hover { background:#2ea043; }
+.global-row { display:flex; align-items:center; gap:8px; margin-bottom:12px; padding-bottom:12px; border-bottom:1px solid #30363d; font-size:12px; color:#8b949e; }
+.global-row input { background:#0d1117; border:1px solid #30363d; color:#e6edf3; padding:4px 8px; border-radius:5px; font-size:12px; width:70px; outline:none; text-align:right; }
+
+/* ── Arb specific ── */
+.arb-positive td.arb-val { }
+.profit-cell { font-weight:700; }
+
+/* ── Toast ── */
+#toasts { position:fixed; bottom:16px; right:16px; display:flex; flex-direction:column; gap:6px; z-index:9999; }
+.toast { background:#21262d; border:1px solid #30363d; border-radius:8px; padding:8px 14px; font-size:12px; min-width:240px; max-width:340px; animation:toastIn .2s ease; }
+.toast.warn { border-color:#e3b341; }
+.toast.err  { border-color:#f85149; }
+.toast.info { border-color:#58a6ff; }
+@keyframes toastIn { from{transform:translateY(8px);opacity:0} to{transform:translateY(0);opacity:1} }
+
+/* ── Loading ── */
+.loading { position:fixed; inset:0; background:rgba(13,17,23,.88); display:flex; align-items:center; justify-content:center; z-index:400; flex-direction:column; gap:12px; }
+.spinner { width:36px; height:36px; border:3px solid #30363d; border-top-color:#58a6ff; border-radius:50%; animation:spin .8s linear infinite; }
 @keyframes spin { to{transform:rotate(360deg)} }
 
-/* Alert Panel */
-.alert-panel {
-  border-top: 2px solid #da3633;
-  background: #0d1117;
-}
-.alert-panel-header {
-  display: flex; align-items: center; gap: 10px;
-  padding: 10px 20px;
-  background: #161b22;
-  border-bottom: 1px solid #30363d;
-  cursor: pointer;
-  user-select: none;
-}
-.alert-panel-header:hover { background: #1c2128; }
-.alert-panel-title { font-size: 13px; font-weight: 700; color: #f85149; }
-.alert-count-badge {
-  background: #da3633; color: #fff;
-  border-radius: 10px; padding: 1px 8px;
-  font-size: 11px; font-weight: 700;
-}
-.alert-threshold-cfg {
-  margin-left: auto; display: flex; align-items: center; gap: 8px;
-  font-size: 11px; color: #8b949e;
-}
-.alert-threshold-cfg input {
-  background: #0d1117; border: 1px solid #30363d; color: #e6edf3;
-  padding: 3px 6px; border-radius: 4px; font-size: 11px; width: 55px; outline: none;
-}
-.alert-threshold-cfg input:focus { border-color: #f85149; }
-.alert-clear-btn {
-  background: #21262d; border: 1px solid #30363d; color: #8b949e;
-  padding: 3px 10px; border-radius: 4px; font-size: 11px; cursor: pointer;
-}
-.alert-clear-btn:hover { background: #30363d; color: #e6edf3; }
-.alert-table-wrap { max-height: 260px; overflow-y: auto; }
-.alert-table-wrap table { width: 100%; border-collapse: collapse; }
-.alert-table-wrap th {
-  background: #0d1117; padding: 6px 12px; text-align: left;
-  font-size: 10px; font-weight: 600; text-transform: uppercase;
-  letter-spacing: .8px; color: #8b949e; border-bottom: 1px solid #21262d;
-  position: sticky; top: 0;
-}
-.alert-table-wrap td {
-  padding: 6px 12px; border-bottom: 1px solid #161b22;
-  font-family: monospace; font-size: 12px;
-}
-.alert-row-new td { animation: flash-red .8s ease; }
-.alert-empty { text-align: center; padding: 24px; color: #484f58; font-size: 12px; }
+/* page visibility */
+.page-content { display:none; }
+.page-content.active { display:block; }
 </style>
 </head>
 <body>
 
-<!-- Loading -->
 <div class="loading" id="loading">
   <div class="spinner"></div>
   <div style="color:#8b949e;font-size:13px">Marketler yükleniyor...</div>
 </div>
 
-<!-- Header -->
+<!-- HEADER -->
 <div class="header">
   <div class="logo">
     <div class="dot dot-bnb"></div>
     <span style="font-weight:700;color:#f0b90b">Binance</span>
     <span class="sep">⟷</span>
-    <div class="dot dot-darkex"></div>
+    <div class="dot dot-dx"></div>
     <span style="font-weight:700;color:#a78bfa">Darkex</span>
   </div>
   <span style="color:#484f58">|</span>
-  <span style="color:#8b949e;font-size:12px">Futures Fiyat Karşılaştırma</span>
-
+  <span style="color:#8b949e;font-size:12px">Futures Monitor</span>
   <div class="countdown-ring" title="Sonraki güncelleme">
     <svg width="32" height="32" viewBox="0 0 32 32">
       <circle cx="16" cy="16" r="13" stroke-width="3"/>
-      <circle class="progress" id="cdCircle" cx="16" cy="16" r="13" stroke-width="3"
-        stroke-dasharray="81.68" stroke-dashoffset="0"/>
+      <circle class="progress" id="cdCircle" cx="16" cy="16" r="13" stroke-width="3" stroke-dasharray="81.68" stroke-dashoffset="0"/>
     </svg>
     <div class="countdown-num" id="cdNum">10</div>
   </div>
-
   <div class="header-right">
     <div class="stat-pill">Eşleşen: <span id="hMatched">—</span></div>
     <div class="stat-pill">Ort. Spread: <span id="hAvgSpread">—</span></div>
@@ -346,165 +204,196 @@ tr:hover td { background: #161b22; }
   </div>
 </div>
 
-<!-- Summary -->
+<!-- PAGE TABS -->
+<div class="page-tabs">
+  <div class="page-tab active" id="tabSpread" onclick="switchPage('spread')">📊 Spread Monitor</div>
+  <div class="page-tab arb-tab" id="tabArb" onclick="switchPage('arb')">⚡ Arbitraj</div>
+</div>
+
+<!-- SUMMARY (shared) -->
 <div class="summary">
-  <div class="s-card">
-    <div class="s-label">Binance Marketi</div>
-    <div class="s-val" id="sBnbCount">—</div>
-    <div class="s-sub">futures çifti</div>
-  </div>
-  <div class="s-card">
-    <div class="s-label">Darkex Marketi</div>
-    <div class="s-val" id="sDxCount">—</div>
-    <div class="s-sub">futures çifti</div>
-  </div>
-  <div class="s-card">
-    <div class="s-label">Eşleşen Çift</div>
-    <div class="s-val" id="sMatched">—</div>
-    <div class="s-sub" id="sMatchedSub">—</div>
-  </div>
-  <div class="s-card">
-    <div class="s-label">Maks. Spread</div>
-    <div class="s-val red" id="sMaxSpread" style="color:#f85149">—</div>
-    <div class="s-sub" id="sMaxSpreadSym">—</div>
-  </div>
-  <div class="s-card">
-    <div class="s-label">Ort. Spread</div>
-    <div class="s-val" id="sAvgSpread">—</div>
-    <div class="s-sub">eşleşen çiftler</div>
-  </div>
-  <div class="s-card">
-    <div class="s-label">&gt;0.5% Spread</div>
-    <div class="s-val yellow" id="sHighSpread" style="color:#e3b341">—</div>
-    <div class="s-sub">dikkat gerektiren</div>
-  </div>
+  <div class="s-card"><div class="s-label">Binance Marketi</div><div class="s-val" id="sBnbCount">—</div><div class="s-sub">futures çifti</div></div>
+  <div class="s-card"><div class="s-label">Darkex Marketi</div><div class="s-val" id="sDxCount">—</div><div class="s-sub">futures çifti</div></div>
+  <div class="s-card"><div class="s-label">Eşleşen Çift</div><div class="s-val" id="sMatched">—</div><div class="s-sub" id="sMatchedSub">—</div></div>
+  <div class="s-card"><div class="s-label">Maks. Spread</div><div class="s-val" id="sMaxSpread" style="color:#f85149">—</div><div class="s-sub" id="sMaxSpreadSym">—</div></div>
+  <div class="s-card"><div class="s-label">Ort. Spread</div><div class="s-val" id="sAvgSpread">—</div><div class="s-sub">mid bazlı</div></div>
+  <div class="s-card"><div class="s-label">Arb Fırsat</div><div class="s-val" id="sArbCount" style="color:#a78bfa">—</div><div class="s-sub">pozitif arb çifti</div></div>
 </div>
 
-<!-- Controls -->
-<div class="controls">
-  <div class="search-wrap">
-    <span class="search-icon">⌕</span>
-    <input type="text" id="searchInput" placeholder="Symbol ara..." oninput="applyFilters()">
-  </div>
+<!-- ═══════════════════════════════════════════════ PAGE 1: SPREAD ═══ -->
+<div class="page-content active" id="page-spread">
 
-  <div class="filter-group">
-    Min spread:
-    <input type="number" id="minSpread" value="0" step="0.01" min="0" oninput="applyFilters()"> %
-  </div>
-
-  <div class="quote-filter">
-    <button class="qbtn active" onclick="setQuote('ALL', this)">Tümü</button>
-    <button class="qbtn" onclick="setQuote('USDT', this)">USDT</button>
-    <button class="qbtn" onclick="setQuote('USDC', this)">USDC</button>
-    <button class="qbtn" onclick="setQuote('BTC', this)">BTC</button>
-  </div>
-
-  <div class="filter-group">
-    Min Bid farkı:
-    <input type="number" id="minBidDiff" value="0" step="0.01" min="0" oninput="applyFilters()"> $
-  </div>
-
-  <div class="filter-group">
-    Min Ask farkı:
-    <input type="number" id="minAskDiff" value="0" step="0.01" min="0" oninput="applyFilters()"> $
-  </div>
-
-  <div style="display:flex;gap:4px;font-size:11px;color:#8b949e;align-items:center">
-    Sırala:
-    <button class="sort-btn active" id="sortSpread" onclick="setSort('spread', this)">Spread %</button>
-    <button class="sort-btn" id="sortBidDiff" onclick="setSort('bidDiff', this)">Bid Farkı</button>
-    <button class="sort-btn" id="sortAskDiff" onclick="setSort('askDiff', this)">Ask Farkı</button>
-    <button class="sort-btn" id="sortSymbol" onclick="setSort('symbol', this)">Symbol</button>
-    <button class="sort-btn" id="sortBnb" onclick="setSort('bnb', this)">Binance $</button>
-  </div>
-
-  <div style="display:flex;align-items:center;gap:6px;margin-left:auto">
-    <label style="font-size:11px;color:#8b949e;display:flex;align-items:center;gap:5px">
-      <input type="checkbox" id="hideSmall"> &lt;0.01% gizle
-    </label>
-    <button class="refresh-btn" onclick="fetchAll()">↻ Yenile</button>
-  </div>
-</div>
-
-<!-- Status Bar -->
-<div class="status-bar">
-  <div class="status-item">
-    <div class="pulse" id="bnbPulse"></div>
-    <span>Binance: <span id="bnbStatus" style="color:#3fb950">OK</span></span>
-  </div>
-  <div class="status-item">
-    <div class="pulse" id="dxPulse"></div>
-    <span>Darkex: <span id="dxStatus" style="color:#3fb950">OK</span></span>
-  </div>
-  <div class="status-item" style="margin-left:auto">
-    <span id="statusMsg" style="color:#484f58">—</span>
-  </div>
-</div>
-
-<!-- Table -->
-<div class="table-wrap">
-  <table>
-    <thead>
-      <tr>
-        <th onclick="setSort('symbol', document.getElementById('sortSymbol'))">
-          Symbol <span class="arrow" id="arr-symbol"></span>
-        </th>
-        <th onclick="setSort('bnb', document.getElementById('sortBnb'))">
-          Binance Fiyat <span class="arrow" id="arr-bnb"></span>
-        </th>
-        <th>Darkex Fiyat</th>
-        <th onclick="setSort('bidDiff', document.getElementById('sortBidDiff'))">
-          Bid Farkı ($) <span class="arrow" id="arr-bidDiff"></span>
-        </th>
-        <th onclick="setSort('askDiff', document.getElementById('sortAskDiff'))">
-          Ask Farkı ($) <span class="arrow" id="arr-askDiff"></span>
-        </th>
-        <th onclick="setSort('spread', document.getElementById('sortSpread'))">
-          Spread % <span class="arrow" id="arr-spread">↓</span>
-        </th>
-        <th style="min-width:100px">Görsel</th>
-        <th>Durum</th>
-        <th>Bildirim</th>
-      </tr>
-    </thead>
-    <tbody id="tableBody">
-      <tr><td colspan="9" class="no-data">Yükleniyor...</td></tr>
-    </tbody>
-  </table>
-</div>
-
-<!-- Alert Panel -->
-<div class="alert-panel">
-  <div class="alert-panel-header" onclick="toggleAlertPanel()">
-    <span style="color:#f85149;font-size:14px">⚠</span>
-    <span class="alert-panel-title">Anomali Kayıtları</span>
-    <span class="alert-count-badge" id="alertBadge">0</span>
-    <span style="color:#8b949e;font-size:11px" id="alertPanelToggleHint">▼ göster</span>
-    <div class="alert-threshold-cfg" onclick="event.stopPropagation()">
-      Eşik:
-      <input type="number" id="alertThreshold" value="0.5" step="0.1" min="0" title="Bid veya Ask farkı bu %'yi aşarsa kayıt alınır"> %
-      <button class="alert-clear-btn" onclick="clearAlertLog()">Temizle</button>
+  <!-- Controls -->
+  <div class="controls">
+    <div class="search-wrap">
+      <span class="search-icon">⌕</span>
+      <input type="text" id="searchInput" placeholder="Symbol ara..." oninput="applyFilters()">
+    </div>
+    <div class="filter-group">Min spread: <input type="number" id="minSpread" value="0" step="0.01" min="0" oninput="applyFilters()"> %</div>
+    <div class="filter-group">Min Bid farkı: <input type="number" id="minBidDiff" value="0" step="0.01" min="0" oninput="applyFilters()"> $</div>
+    <div class="filter-group">Min Ask farkı: <input type="number" id="minAskDiff" value="0" step="0.01" min="0" oninput="applyFilters()"> $</div>
+    <div style="display:flex;gap:4px;">
+      <button class="qbtn active" onclick="setQuote('ALL',this)">Tümü</button>
+      <button class="qbtn" onclick="setQuote('USDT',this)">USDT</button>
+      <button class="qbtn" onclick="setQuote('USDC',this)">USDC</button>
+      <button class="qbtn" onclick="setQuote('BTC',this)">BTC</button>
+    </div>
+    <div style="display:flex;gap:4px;font-size:11px;color:#8b949e;align-items:center">
+      Sırala:
+      <button class="sort-btn active" id="sortSpread"  onclick="setSort('spread',this)">Spread %</button>
+      <button class="sort-btn" id="sortBidDiff" onclick="setSort('bidDiff',this)">Bid Farkı</button>
+      <button class="sort-btn" id="sortAskDiff" onclick="setSort('askDiff',this)">Ask Farkı</button>
+      <button class="sort-btn" id="sortSymbol"  onclick="setSort('symbol',this)">Symbol</button>
+      <button class="sort-btn" id="sortBnb"     onclick="setSort('bnb',this)">Binance $</button>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;margin-left:auto">
+      <label style="font-size:11px;color:#8b949e;display:flex;align-items:center;gap:5px"><input type="checkbox" id="hideSmall"> &lt;0.01% gizle</label>
+      <button class="rules-btn" onclick="openRulesModal()">🔔 Alert Kuralları</button>
+      <button class="refresh-btn" onclick="fetchAll()">↻ Yenile</button>
     </div>
   </div>
-  <div id="alertPanelBody" style="display:none">
-    <div class="alert-table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>Zaman</th>
-            <th>Symbol</th>
-            <th>Tetikleyen</th>
-            <th>Fark %</th>
-            <th>Binance</th>
-            <th>Darkex</th>
-            <th>Bid Farkı $</th>
-            <th>Ask Farkı $</th>
-          </tr>
-        </thead>
-        <tbody id="alertTableBody">
-          <tr><td colspan="8" class="alert-empty">Henüz anomali kaydı yok — %2+ fark oluşunca buraya düşer</td></tr>
-        </tbody>
-      </table>
+
+  <!-- Status -->
+  <div class="status-bar">
+    <div class="status-item"><div class="pulse" id="bnbPulse"></div><span>Binance: <span id="bnbStatus" style="color:#3fb950">OK</span></span></div>
+    <div class="status-item"><div class="pulse" id="dxPulse"></div><span>Darkex: <span id="dxStatus" style="color:#3fb950">OK</span></span></div>
+    <div class="status-item" style="margin-left:auto"><span id="statusMsg" style="color:#484f58">—</span></div>
+  </div>
+
+  <!-- Table -->
+  <div class="table-wrap">
+    <table>
+      <thead><tr>
+        <th onclick="setSort('symbol',document.getElementById('sortSymbol'))">Symbol <span class="arrow" id="arr-symbol"></span></th>
+        <th onclick="setSort('bnb',document.getElementById('sortBnb'))">Binance Fiyat <span class="arrow" id="arr-bnb"></span></th>
+        <th>Darkex Fiyat</th>
+        <th onclick="setSort('bidDiff',document.getElementById('sortBidDiff'))">Bid Farkı ($) <span class="arrow" id="arr-bidDiff"></span></th>
+        <th onclick="setSort('askDiff',document.getElementById('sortAskDiff'))">Ask Farkı ($) <span class="arrow" id="arr-askDiff"></span></th>
+        <th onclick="setSort('spread',document.getElementById('sortSpread'))">Spread % <span class="arrow" id="arr-spread">↓</span></th>
+        <th>Görsel</th>
+        <th>Durum</th>
+        <th>Bildirim</th>
+      </tr></thead>
+      <tbody id="tableBody"><tr><td colspan="9" class="no-data">Yükleniyor...</td></tr></tbody>
+    </table>
+  </div>
+
+  <!-- Alert Panel -->
+  <div class="alert-panel">
+    <div class="alert-panel-header" onclick="toggleAlertPanel()">
+      <span style="color:#f85149;font-size:14px">⚠</span>
+      <span style="font-size:13px;font-weight:700;color:#f85149">Anomali Kayıtları</span>
+      <span class="alert-count-badge" id="alertBadge">0</span>
+      <span style="color:#8b949e;font-size:11px" id="alertToggleHint">▼ göster</span>
+      <div class="alert-threshold-cfg" onclick="event.stopPropagation()">
+        Global eşik: <input type="number" id="alertThreshold" value="0.5" step="0.1" min="0" title="Sembol bazlı kural yoksa bu eşik geçerli"> %
+        <button class="alert-clear-btn" onclick="clearAlertLog()">Temizle</button>
+      </div>
+    </div>
+    <div id="alertPanelBody" style="display:none">
+      <div class="alert-table-wrap">
+        <table>
+          <thead><tr>
+            <th>Zaman</th><th>Symbol</th><th>Tetikleyen</th><th>Fark %</th>
+            <th>Eşik %</th><th>Binance</th><th>Darkex</th><th>Bid Fark $</th><th>Ask Fark $</th>
+          </tr></thead>
+          <tbody id="alertTableBody"><tr><td colspan="9" class="alert-empty">Henüz anomali kaydı yok</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div><!-- /page-spread -->
+
+<!-- ═══════════════════════════════════════════════ PAGE 2: ARB ═══ -->
+<div class="page-content" id="page-arb">
+
+  <!-- Controls -->
+  <div class="controls">
+    <div class="search-wrap">
+      <span class="search-icon">⌕</span>
+      <input type="text" id="arbSearch" placeholder="Symbol ara..." oninput="applyArbFilters()">
+    </div>
+    <div style="display:flex;gap:4px;">
+      <button class="qbtn active" onclick="setArbQuote('ALL',this)">Tümü</button>
+      <button class="qbtn" onclick="setArbQuote('USDT',this)">USDT</button>
+      <button class="qbtn" onclick="setArbQuote('USDC',this)">USDC</button>
+    </div>
+    <label style="font-size:11px;color:#8b949e;display:flex;align-items:center;gap:5px">
+      <input type="checkbox" id="arbOnlyPositive"> Sadece pozitif fırsatlar
+    </label>
+    <div style="display:flex;gap:4px;font-size:11px;color:#8b949e;align-items:center">
+      Sırala:
+      <button class="sort-btn active" id="arbSortBest"    onclick="setArbSort('best',this)">En İyi Fırsat</button>
+      <button class="sort-btn" id="arbSortBnbDx"  onclick="setArbSort('bnbdx',this)">Al-Bnb/Sat-Dx</button>
+      <button class="sort-btn" id="arbSortDxBnb"  onclick="setArbSort('dxbnb',this)">Al-Dx/Sat-Bnb</button>
+      <button class="sort-btn" id="arbSortSym"    onclick="setArbSort('symbol',this)">Symbol</button>
+    </div>
+    <div style="margin-left:auto">
+      <button class="refresh-btn" onclick="fetchAll()">↻ Yenile</button>
+    </div>
+  </div>
+
+  <!-- Status (shared visual) -->
+  <div class="status-bar">
+    <div class="status-item"><div class="pulse" id="bnbPulse2"></div><span>Binance</span></div>
+    <div class="status-item"><div class="pulse" id="dxPulse2"></div><span>Darkex</span></div>
+    <div style="margin-left:auto;font-size:11px;color:#8b949e" id="arbStatusMsg">—</div>
+    <div style="font-size:11px;color:#8b949e">
+      <span style="color:#3fb950">●</span> Al Bnb / Sat Dx &nbsp;
+      <span style="color:#58a6ff">●</span> Al Dx / Sat Bnb
+    </div>
+  </div>
+
+  <!-- Arb info box -->
+  <div style="background:#161b22;border-bottom:1px solid #30363d;padding:8px 20px;font-size:11px;color:#8b949e;display:flex;gap:20px;flex-wrap:wrap">
+    <span>🟡 <b style="color:#f0b90b">Al Bnb / Sat Dx:</b> Binance Ask fiyatından al → Darkex Bid fiyatından sat. Fark = Darkex Bid − Binance Ask</span>
+    <span>🟣 <b style="color:#a78bfa">Al Dx / Sat Bnb:</b> Darkex Ask fiyatından al → Binance Bid fiyatından sat. Fark = Binance Bid − Darkex Ask</span>
+  </div>
+
+  <!-- Arb Table -->
+  <div class="table-wrap">
+    <table>
+      <thead><tr>
+        <th onclick="setArbSort('symbol',document.getElementById('arbSortSym'))">Symbol <span class="arrow" id="arrarb-symbol"></span></th>
+        <th>Bnb Ask</th>
+        <th>Dx Bid</th>
+        <th onclick="setArbSort('bnbdx',document.getElementById('arbSortBnbDx'))">Al-Bnb/Sat-Dx ($) <span class="arrow" id="arrarb-bnbdx"></span></th>
+        <th>Al-Bnb/Sat-Dx (%)</th>
+        <th>Dx Ask</th>
+        <th>Bnb Bid</th>
+        <th onclick="setArbSort('dxbnb',document.getElementById('arbSortDxBnb'))">Al-Dx/Sat-Bnb ($) <span class="arrow" id="arrarb-dxbnb"></span></th>
+        <th>Al-Dx/Sat-Bnb (%)</th>
+        <th onclick="setArbSort('best',document.getElementById('arbSortBest'))">En İyi % <span class="arrow" id="arrarb-best">↓</span></th>
+        <th>Durum</th>
+      </tr></thead>
+      <tbody id="arbTableBody"><tr><td colspan="11" class="no-data">Yükleniyor...</td></tr></tbody>
+    </table>
+  </div>
+
+</div><!-- /page-arb -->
+
+<!-- ═══════════════════════════════ ALERT RULES MODAL ═══ -->
+<div class="modal-overlay" id="rulesModal" style="display:none" onclick="if(event.target===this)closeRulesModal()">
+  <div class="modal">
+    <div class="modal-header">
+      <span style="font-size:16px">🔔</span>
+      <h3>Sembol Bazlı Alert Kuralları</h3>
+      <button class="modal-close" onclick="closeRulesModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="global-row">
+        <span style="flex:1;color:#c9d1d9">Global eşik (kural yoksa):</span>
+        <input type="number" id="modalGlobalThreshold" step="0.1" min="0" style="width:70px" oninput="syncGlobalThreshold(this.value)">
+        <span style="color:#8b949e">%</span>
+      </div>
+      <div style="font-size:11px;color:#8b949e;margin-bottom:10px">Bid veya Ask farkı bu eşiği (%) aşarsa anomali olarak kaydedilir. Sembol bazlı kural varsa o önceliklidir.</div>
+      <div id="rulesList"></div>
+      <div class="modal-add">
+        <select id="addRuleSym"><option value="">— Symbol seç —</option></select>
+        <input type="number" id="addRuleVal" placeholder="%" step="0.1" min="0" value="0.5">
+        <span style="color:#8b949e;font-size:11px;align-self:center">%</span>
+        <button onclick="addRule()">Ekle</button>
+      </div>
     </div>
   </div>
 </div>
@@ -512,118 +401,132 @@ tr:hover td { background: #161b22; }
 <div id="toasts"></div>
 
 <script>
-// ─── Config ──────────────────────────────────────────────
+// ════════════════════════════════════════════════════════════
+// Config
+// ════════════════════════════════════════════════════════════
 const BINANCE_URL = 'https://fapi.binance.com/fapi/v1/ticker/bookTicker';
 const DARKEX_URL  = 'https://trade-api.darkex.live/fapi/v1/ticker/bookTicker';
-const INTERVAL    = 10; // seconds
+const INTERVAL    = 10;
 
-// ─── State ───────────────────────────────────────────────
-let allData      = [];
-let filtered     = [];
-let bnbRaw       = {};
-let dxRaw        = {};
-let sortKey      = 'spread';
-let sortDir      = -1;
-let quoteFilter  = 'ALL';
-let prevPrices   = {};
-let cdTimer      = null;
-let cdVal        = INTERVAL;
-let fetchTimer   = null;
-let alertLog       = JSON.parse(localStorage.getItem('alertLog') || '[]');
+// ════════════════════════════════════════════════════════════
+// State
+// ════════════════════════════════════════════════════════════
+let allData        = [];
+let filtered       = [];
+let arbData        = [];
+let arbFiltered    = [];
+let bnbRaw         = {};
+let dxRaw          = {};
+let sortKey        = 'spread';
+let sortDir        = -1;
+let quoteFilter    = 'ALL';
+let arbQuoteFilter = 'ALL';
+let arbSortKey     = 'best';
+let arbSortDir     = -1;
+let prevPrices     = {};
+let cdTimer        = null;
+let cdVal          = INTERVAL;
+let fetchTimer     = null;
+let currentPage    = 'spread';
+
+let alertLog       = JSON.parse(localStorage.getItem('alertLog')      || '[]');
 let mutedSymbols   = new Set(JSON.parse(localStorage.getItem('mutedSymbols') || '[]'));
+let symbolRules    = JSON.parse(localStorage.getItem('symbolRules')   || '{}'); // {BTCUSDT: 0.5}
 let alertPanelOpen = false;
 
-// ─── Countdown Ring ──────────────────────────────────────
-const CIRC = 2 * Math.PI * 13; // ~81.68
-function updateCountdown(n) {
-  cdVal = n;
-  const offset = CIRC * (1 - n / INTERVAL);
-  document.getElementById('cdCircle').style.strokeDashoffset = offset;
-  document.getElementById('cdNum').textContent = n;
+// ════════════════════════════════════════════════════════════
+// Page switching
+// ════════════════════════════════════════════════════════════
+function switchPage(page) {
+  currentPage = page;
+  document.querySelectorAll('.page-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.page-content').forEach(p => p.classList.remove('active'));
+  document.getElementById('tab' + page.charAt(0).toUpperCase() + page.slice(1)).classList.add('active');
+  document.getElementById('page-' + page).classList.add('active');
 }
 
+// ════════════════════════════════════════════════════════════
+// Countdown
+// ════════════════════════════════════════════════════════════
+const CIRC = 2 * Math.PI * 13;
+function updateCountdown(n) {
+  cdVal = n;
+  document.getElementById('cdCircle').style.strokeDashoffset = CIRC * (1 - n / INTERVAL);
+  document.getElementById('cdNum').textContent = n;
+}
 function startCountdown() {
   clearInterval(cdTimer);
   updateCountdown(INTERVAL);
-  cdTimer = setInterval(() => {
-    cdVal--;
-    if (cdVal < 0) cdVal = INTERVAL;
-    updateCountdown(cdVal);
-  }, 1000);
+  cdTimer = setInterval(() => { cdVal--; if (cdVal < 0) cdVal = INTERVAL; updateCountdown(cdVal); }, 1000);
 }
 
-// ─── Fetch ───────────────────────────────────────────────
-async function fetchTicker(url, label) {
+// ════════════════════════════════════════════════════════════
+// Fetch
+// ════════════════════════════════════════════════════════════
+async function fetchTicker(url) {
   const t0 = Date.now();
-  const r = await fetch(url);
+  const r  = await fetch(url);
   if (!r.ok) throw new Error('HTTP ' + r.status);
-  const data = await r.json();
-  const ms = Date.now() - t0;
-  return { data, ms };
+  return { data: await r.json(), ms: Date.now() - t0 };
 }
 
 async function fetchAll() {
-  try {
-    const [bnbRes, dxRes] = await Promise.allSettled([
-      fetchTicker(BINANCE_URL, 'Binance'),
-      fetchTicker(DARKEX_URL, 'Darkex')
-    ]);
+  const [bnbRes, dxRes] = await Promise.allSettled([
+    fetchTicker(BINANCE_URL),
+    fetchTicker(DARKEX_URL)
+  ]);
 
-    // Binance
-    if (bnbRes.status === 'fulfilled') {
-      bnbRaw = {};
-      bnbRes.value.data.forEach(t => {
-        const bid = parseFloat(t.bidPrice), ask = parseFloat(t.askPrice);
-        bnbRaw[t.symbol] = { bid, ask, mid: (bid + ask) / 2 };
-      });
-      setStatus('bnb', true, bnbRes.value.ms + 'ms');
-      document.getElementById('sBnbCount').textContent = Object.keys(bnbRaw).length;
-    } else {
-      setStatus('bnb', false, bnbRes.reason?.message || 'Hata');
-    }
-
-    // Darkex
-    if (dxRes.status === 'fulfilled') {
-      dxRaw = {};
-      dxRes.value.data.forEach(t => {
-        const bid = parseFloat(t.bidPrice), ask = parseFloat(t.askPrice);
-        dxRaw[t.symbol] = { bid, ask, mid: (bid + ask) / 2 };
-      });
-      setStatus('dx', true, dxRes.value.ms + 'ms');
-      document.getElementById('sDxCount').textContent = Object.keys(dxRaw).length;
-    } else {
-      setStatus('dx', false, dxRes.reason?.message || 'Hata');
-    }
-
-    buildComparison();
-    updateSummary();
-    applyFilters();
-    document.getElementById('hLastUpdate').textContent = 'Güncellendi: ' + new Date().toTimeString().slice(0,8);
-    document.getElementById('loading').style.display = 'none';
-    startCountdown();
-
-  } catch(e) {
-    toast('Fetch Hatası', e.message, 'err');
+  if (bnbRes.status === 'fulfilled') {
+    bnbRaw = {};
+    bnbRes.value.data.forEach(t => {
+      const bid = parseFloat(t.bidPrice), ask = parseFloat(t.askPrice);
+      bnbRaw[t.symbol] = { bid, ask, mid: (bid + ask) / 2 };
+    });
+    setStatus('bnb', true, bnbRes.value.ms + 'ms');
+    document.getElementById('sBnbCount').textContent = Object.keys(bnbRaw).length;
+  } else {
+    setStatus('bnb', false, bnbRes.reason?.message || 'Hata');
   }
+
+  if (dxRes.status === 'fulfilled') {
+    dxRaw = {};
+    dxRes.value.data.forEach(t => {
+      const bid = parseFloat(t.bidPrice), ask = parseFloat(t.askPrice);
+      dxRaw[t.symbol] = { bid, ask, mid: (bid + ask) / 2 };
+    });
+    setStatus('dx', true, dxRes.value.ms + 'ms');
+    document.getElementById('sDxCount').textContent = Object.keys(dxRaw).length;
+  } else {
+    setStatus('dx', false, dxRes.reason?.message || 'Hata');
+  }
+
+  buildComparison();
+  buildArb();
+  updateSummary();
+  applyFilters();
+  applyArbFilters();
+  document.getElementById('hLastUpdate').textContent = 'Son: ' + new Date().toTimeString().slice(0, 8);
+  document.getElementById('loading').style.display = 'none';
+  startCountdown();
 }
 
-function setStatus(which, ok, msg) {
-  const pulse = document.getElementById(which + 'Pulse');
-  const status = document.getElementById(which + 'Status');
-  pulse.className = 'pulse' + (ok ? '' : ' err');
-  status.textContent = ok ? 'OK (' + msg + ')' : 'HATA: ' + msg;
-  status.style.color = ok ? '#3fb950' : '#f85149';
+function setStatus(w, ok, msg) {
+  ['', '2'].forEach(s => {
+    const p = document.getElementById(w + 'Pulse' + s);
+    const st = document.getElementById(w + 'Status' + s);
+    if (p) p.className = 'pulse' + (ok ? '' : ' err');
+    if (st) { st.textContent = ok ? 'OK (' + msg + ')' : 'HATA'; st.style.color = ok ? '#3fb950' : '#f85149'; }
+  });
 }
 
-// ─── Build Comparison ────────────────────────────────────
+// ════════════════════════════════════════════════════════════
+// Build Spread Data
+// ════════════════════════════════════════════════════════════
 function buildComparison() {
   allData = [];
-  const dxSymbols = new Set(Object.keys(dxRaw));
-
-  for (const sym of dxSymbols) {
+  for (const sym of Object.keys(dxRaw)) {
     if (!(sym in bnbRaw)) continue;
-    const bnb = bnbRaw[sym];
-    const dx  = dxRaw[sym];
+    const bnb = bnbRaw[sym], dx = dxRaw[sym];
     if (!bnb?.mid || !dx?.mid) continue;
 
     const bidDiff    = dx.bid - bnb.bid;
@@ -636,47 +539,72 @@ function buildComparison() {
     allData.push({ sym, bnb, dx, bidDiff, askDiff, midDiff, spreadPct, bidDiffPct, askDiffPct });
   }
 
-  checkAlerts();
-
-  // flash detection
   allData.forEach(row => {
     const prev = prevPrices[row.sym];
     row._flash = prev ? (row.dx.mid > prev ? 'up' : row.dx.mid < prev ? 'down' : null) : null;
     prevPrices[row.sym] = row.dx.mid;
   });
+
+  checkAlerts();
 }
 
-// ─── Summary ─────────────────────────────────────────────
+// ════════════════════════════════════════════════════════════
+// Build Arbitrage Data
+// ════════════════════════════════════════════════════════════
+function buildArb() {
+  arbData = [];
+  for (const sym of Object.keys(dxRaw)) {
+    if (!(sym in bnbRaw)) continue;
+    const bnb = bnbRaw[sym], dx = dxRaw[sym];
+    if (!bnb?.bid || !dx?.bid) continue;
+
+    // Buy on Binance (at ask), sell on Darkex (at bid)
+    const bnbDxProfit    = dx.bid - bnb.ask;
+    const bnbDxProfitPct = (bnbDxProfit / bnb.ask) * 100;
+
+    // Buy on Darkex (at ask), sell on Binance (at bid)
+    const dxBnbProfit    = bnb.bid - dx.ask;
+    const dxBnbProfitPct = (dxBnbProfit / dx.ask) * 100;
+
+    const best = Math.max(bnbDxProfitPct, dxBnbProfitPct);
+
+    arbData.push({ sym, bnb, dx, bnbDxProfit, bnbDxProfitPct, dxBnbProfit, dxBnbProfitPct, best });
+  }
+}
+
+// ════════════════════════════════════════════════════════════
+// Summary
+// ════════════════════════════════════════════════════════════
 function updateSummary() {
-  const matched = allData.length;
-  document.getElementById('sMatched').textContent = matched;
-  document.getElementById('hMatched').textContent = matched;
-  const dxTotal = Object.keys(dxRaw).length;
-  const bnbTotal = Object.keys(bnbRaw).length;
-  document.getElementById('sMatchedSub').textContent = `Binance: ${bnbTotal}, Darkex: ${dxTotal}`;
+  document.getElementById('sMatched').textContent = allData.length;
+  document.getElementById('hMatched').textContent = allData.length;
+  document.getElementById('sMatchedSub').textContent =
+    'Bnb: ' + Object.keys(bnbRaw).length + ' / Dx: ' + Object.keys(dxRaw).length;
 
-  if (!matched) return;
-  const spreads = allData.map(r => r.spreadPct);
-  const avg = spreads.reduce((a,b) => a+b, 0) / spreads.length;
-  const max = Math.max(...spreads);
-  const maxRow = allData.find(r => r.spreadPct === max);
-  const highCount = spreads.filter(s => s >= 0.5).length;
+  if (allData.length) {
+    const spreads = allData.map(r => r.spreadPct);
+    const avg = spreads.reduce((a,b)=>a+b,0)/spreads.length;
+    const maxRow = allData.reduce((a,b) => a.spreadPct > b.spreadPct ? a : b);
+    document.getElementById('sAvgSpread').textContent  = avg.toFixed(4) + '%';
+    document.getElementById('hAvgSpread').textContent  = avg.toFixed(4) + '%';
+    document.getElementById('sMaxSpread').textContent  = maxRow.spreadPct.toFixed(4) + '%';
+    document.getElementById('sMaxSpreadSym').textContent = maxRow.sym;
+  }
 
-  document.getElementById('sAvgSpread').textContent = avg.toFixed(4) + '%';
-  document.getElementById('hAvgSpread').textContent = avg.toFixed(4) + '%';
-  document.getElementById('sMaxSpread').textContent = max.toFixed(4) + '%';
-  document.getElementById('sMaxSpreadSym').textContent = maxRow?.sym || '—';
-  document.getElementById('sHighSpread').textContent = highCount;
+  const arbPositive = arbData.filter(r => r.bnbDxProfitPct > 0 || r.dxBnbProfitPct > 0).length;
+  document.getElementById('sArbCount').textContent = arbPositive;
+  document.getElementById('arbStatusMsg').textContent = arbData.length + ' çift karşılaştırılıyor';
 }
 
-// ─── Filters & Sort ──────────────────────────────────────
+// ════════════════════════════════════════════════════════════
+// Spread Filters & Sort
+// ════════════════════════════════════════════════════════════
 function applyFilters() {
-  const search    = document.getElementById('searchInput').value.toUpperCase();
-  const minSpread = parseFloat(document.getElementById('minSpread').value) || 0;
-  const hideSmall = document.getElementById('hideSmall').checked;
-
+  const search     = document.getElementById('searchInput').value.toUpperCase();
+  const minSpread  = parseFloat(document.getElementById('minSpread').value)  || 0;
   const minBidDiff = parseFloat(document.getElementById('minBidDiff').value) || 0;
   const minAskDiff = parseFloat(document.getElementById('minAskDiff').value) || 0;
+  const hideSmall  = document.getElementById('hideSmall').checked;
 
   filtered = allData.filter(r => {
     if (search && !r.sym.includes(search)) return false;
@@ -689,148 +617,228 @@ function applyFilters() {
   });
 
   filtered.sort((a, b) => {
-    if (sortKey === 'symbol')  return sortDir * a.sym.localeCompare(b.sym);
-    if (sortKey === 'bnb')     return sortDir * (a.bnb.mid - b.bnb.mid);
-    if (sortKey === 'bidDiff') return sortDir * (Math.abs(a.bidDiff) - Math.abs(b.bidDiff));
-    if (sortKey === 'askDiff') return sortDir * (Math.abs(a.askDiff) - Math.abs(b.askDiff));
+    if (sortKey==='symbol')  return sortDir * a.sym.localeCompare(b.sym);
+    if (sortKey==='bnb')     return sortDir * (a.bnb.mid - b.bnb.mid);
+    if (sortKey==='bidDiff') return sortDir * (Math.abs(a.bidDiff) - Math.abs(b.bidDiff));
+    if (sortKey==='askDiff') return sortDir * (Math.abs(a.askDiff) - Math.abs(b.askDiff));
     return sortDir * (a.spreadPct - b.spreadPct);
   });
 
-  document.getElementById('statusMsg').textContent =
-    `${filtered.length} / ${allData.length} çift gösteriliyor`;
-
+  document.getElementById('statusMsg').textContent = filtered.length + ' / ' + allData.length + ' çift';
   renderTable();
 }
 
 function setQuote(q, el) {
   quoteFilter = q;
-  document.querySelectorAll('.qbtn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.controls .qbtn').forEach(b => b.classList.remove('active'));
   el.classList.add('active');
   applyFilters();
 }
 
 function setSort(key, el) {
-  if (sortKey === key) { sortDir *= -1; }
-  else { sortKey = key; sortDir = key === 'symbol' ? 1 : -1; }
-  document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
+  sortKey = key;
+  sortDir = (el?.classList.contains('active')) ? sortDir * -1 : -1;
+  if (key === 'symbol') sortDir = Math.abs(sortDir);
+  document.querySelectorAll('#page-spread .sort-btn').forEach(b => b.classList.remove('active'));
   el?.classList.add('active');
-  // arrows
   ['symbol','bnb','bidDiff','askDiff','spread'].forEach(k => {
     const a = document.getElementById('arr-' + k);
-    if (a) a.textContent = k === sortKey ? (sortDir === -1 ? '↓' : '↑') : '';
+    if (a) a.textContent = k === key ? (sortDir === -1 ? '↓' : '↑') : '';
   });
   applyFilters();
 }
 
-// ─── Render ──────────────────────────────────────────────
+// ════════════════════════════════════════════════════════════
+// Arb Filters & Sort
+// ════════════════════════════════════════════════════════════
+function applyArbFilters() {
+  const search      = document.getElementById('arbSearch').value.toUpperCase();
+  const onlyPos     = document.getElementById('arbOnlyPositive').checked;
+
+  arbFiltered = arbData.filter(r => {
+    if (search && !r.sym.includes(search)) return false;
+    if (arbQuoteFilter !== 'ALL' && !r.sym.endsWith(arbQuoteFilter)) return false;
+    if (onlyPos && r.bnbDxProfitPct <= 0 && r.dxBnbProfitPct <= 0) return false;
+    return true;
+  });
+
+  arbFiltered.sort((a, b) => {
+    if (arbSortKey === 'symbol') return arbSortDir * a.sym.localeCompare(b.sym);
+    if (arbSortKey === 'bnbdx')  return arbSortDir * (a.bnbDxProfitPct - b.bnbDxProfitPct);
+    if (arbSortKey === 'dxbnb')  return arbSortDir * (a.dxBnbProfitPct - b.dxBnbProfitPct);
+    return arbSortDir * (a.best - b.best); // 'best'
+  });
+
+  renderArbTable();
+}
+
+function setArbQuote(q, el) {
+  arbQuoteFilter = q;
+  document.querySelectorAll('#page-arb .qbtn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  applyArbFilters();
+}
+
+function setArbSort(key, el) {
+  arbSortKey = key;
+  arbSortDir = (el?.classList.contains('active')) ? arbSortDir * -1 : -1;
+  if (key === 'symbol') arbSortDir = Math.abs(arbSortDir);
+  document.querySelectorAll('#page-arb .sort-btn').forEach(b => b.classList.remove('active'));
+  el?.classList.add('active');
+  ['symbol','bnbdx','dxbnb','best'].forEach(k => {
+    const a = document.getElementById('arrarb-' + k);
+    if (a) a.textContent = k === key ? (arbSortDir === -1 ? '↓' : '↑') : '';
+  });
+  applyArbFilters();
+}
+
+// ════════════════════════════════════════════════════════════
+// Render Helpers
+// ════════════════════════════════════════════════════════════
 function fmtPrice(p) {
-  if (!p && p !== 0) return '—';
-  if (p >= 1000)    return p.toLocaleString('en', {minimumFractionDigits:2, maximumFractionDigits:2});
-  if (p >= 1)       return p.toFixed(4);
-  if (p >= 0.0001)  return p.toFixed(6);
+  if (p === null || p === undefined || isNaN(p)) return '—';
+  const a = Math.abs(p);
+  if (a >= 1000)   return p.toLocaleString('en', {minimumFractionDigits:2, maximumFractionDigits:2});
+  if (a >= 1)      return p.toFixed(4);
+  if (a >= 0.0001) return p.toFixed(6);
   return p.toFixed(8);
 }
-
-function fmtDiff(d) {
-  const sign = d >= 0 ? '+' : '';
-  return `${sign}${fmtPrice(d)}`;
-}
-
-function spreadColor(pct) {
-  if (pct < 0.1)  return '#3fb950';
-  if (pct < 0.5)  return '#e3b341';
-  return '#f85149';
-}
-
+function fmtDiff(d) { const s = d >= 0 ? '+' : ''; return s + fmtPrice(d); }
+function fmtPct(p)  { const s = p >= 0 ? '+' : ''; return s + p.toFixed(4) + '%'; }
+function spreadColor(pct) { return pct < 0.1 ? '#3fb950' : pct < 0.5 ? '#e3b341' : '#f85149'; }
 function spreadBadge(pct) {
-  if (pct < 0.1)  return '<span class="badge badge-green">Normal</span>';
-  if (pct < 0.5)  return '<span class="badge badge-yellow">Dikkat</span>';
+  if (pct < 0.1) return '<span class="badge badge-green">Normal</span>';
+  if (pct < 0.5) return '<span class="badge badge-yellow">Dikkat</span>';
   return '<span class="badge badge-red">Yüksek</span>';
 }
-
 function parseQuote(sym) {
-  const quotes = ['USDT','USDC','BTC','ETH','BNB'];
-  for (const q of quotes) {
+  for (const q of ['USDT','USDC','BTC','ETH','BNB'])
     if (sym.endsWith(q)) return { base: sym.slice(0, -q.length), quote: q };
-  }
   return { base: sym, quote: '' };
 }
 
+// ════════════════════════════════════════════════════════════
+// Render Spread Table
+// ════════════════════════════════════════════════════════════
 function renderTable() {
   const el = document.getElementById('tableBody');
   if (!filtered.length) {
     el.innerHTML = '<tr><td colspan="9" class="no-data">Eşleşen market bulunamadı</td></tr>';
     return;
   }
-
   el.innerHTML = filtered.map(row => {
     const { base, quote } = parseQuote(row.sym);
-    const color = spreadColor(row.spreadPct);
-    const barW  = Math.min(row.spreadPct / 2 * 100, 100);
-    const diffColor = row.midDiff > 0 ? '#3fb950' : row.midDiff < 0 ? '#f85149' : '#8b949e';
+    const color      = spreadColor(row.spreadPct);
+    const barW       = Math.min(row.spreadPct / 2 * 100, 100);
     const flashClass = row._flash === 'up' ? 'flash-up' : row._flash === 'down' ? 'flash-down' : '';
+    const muted      = mutedSymbols.has(row.sym);
+    const bidC = Math.abs(row.bidDiff)<0.01 ? '#8b949e' : row.bidDiff>0 ? '#3fb950' : '#f85149';
+    const askC = Math.abs(row.askDiff)<0.01 ? '#8b949e' : row.askDiff>0 ? '#3fb950' : '#f85149';
 
-    const bidDiffColor = Math.abs(row.bidDiff) < 0.01 ? '#8b949e' : row.bidDiff > 0 ? '#3fb950' : '#f85149';
-    const askDiffColor = Math.abs(row.askDiff) < 0.01 ? '#8b949e' : row.askDiff > 0 ? '#3fb950' : '#f85149';
+    // custom rule indicator on bell
+    const hasRule = sym => symbolRules[sym] !== undefined;
+    const ruleVal = symbolRules[row.sym];
+    const bellLabel = muted ? '🔕' : (ruleVal !== undefined ? `🔔 ${ruleVal}%` : '🔔');
 
-    const muted = mutedSymbols.has(row.sym);
     return `<tr class="${flashClass}">
-      <td>
-        <div class="symbol-cell">
-          <span class="symbol-name">${base}</span>
-          <span class="symbol-quote">${quote}</span>
-        </div>
-      </td>
+      <td><div class="symbol-cell">
+        <span class="symbol-name">${base}</span>
+        <span class="symbol-quote">${quote}</span>
+      </div></td>
       <td style="color:#f0b90b;font-weight:700">${fmtPrice(row.bnb.mid)}</td>
       <td style="color:#a78bfa;font-weight:700">${fmtPrice(row.dx.mid)}</td>
-      <td style="color:${bidDiffColor};font-weight:600">${fmtDiff(row.bidDiff)}</td>
-      <td style="color:${askDiffColor};font-weight:600">${fmtDiff(row.askDiff)}</td>
+      <td style="color:${bidC};font-weight:600">${fmtDiff(row.bidDiff)}</td>
+      <td style="color:${askC};font-weight:600">${fmtDiff(row.askDiff)}</td>
       <td style="color:${color};font-weight:700">${row.spreadPct.toFixed(4)}%</td>
-      <td>
-        <div class="diff-bar-cell">
-          <div class="diff-bar-bg">
-            <div class="diff-bar-fill" style="width:${barW}%;background:${color}"></div>
-          </div>
-        </div>
-      </td>
+      <td><div class="diff-bar-bg"><div class="diff-bar-fill" style="width:${barW}%;background:${color}"></div></div></td>
       <td>${spreadBadge(row.spreadPct)}</td>
-      <td style="text-align:center"><button class="bell-btn ${muted ? 'muted' : ''}" onclick="toggleMute('${row.sym}')" title="${muted ? 'Bildirimleri aç' : 'Bildirimleri kapat'}">${muted ? '🔕' : '🔔'}</button></td>
+      <td style="text-align:center">
+        <button class="bell-btn ${muted ? 'muted' : ''}" onclick="toggleMute('${row.sym}')" title="${muted ? 'Bildirimleri aç' : 'Bildirimleri kapat'}">${bellLabel}</button>
+      </td>
     </tr>`;
   }).join('');
 }
 
-// ─── Alert Log ───────────────────────────────────────────
+// ════════════════════════════════════════════════════════════
+// Render Arb Table
+// ════════════════════════════════════════════════════════════
+function renderArbTable() {
+  const el = document.getElementById('arbTableBody');
+  if (!arbFiltered.length) {
+    el.innerHTML = '<tr><td colspan="11" class="no-data">Arbitraj verisi bulunamadı</td></tr>';
+    return;
+  }
+
+  el.innerHTML = arbFiltered.map(row => {
+    const { base, quote } = parseQuote(row.sym);
+
+    const bnbDxColor = row.bnbDxProfit > 0 ? '#3fb950' : row.bnbDxProfit < 0 ? '#f85149' : '#8b949e';
+    const dxBnbColor = row.dxBnbProfit > 0 ? '#58a6ff' : row.dxBnbProfit < 0 ? '#f85149' : '#8b949e';
+
+    const bnbDxBadge = row.bnbDxProfitPct > 0
+      ? `<span class="badge badge-green">+${row.bnbDxProfitPct.toFixed(4)}%</span>`
+      : `<span class="badge badge-red">${row.bnbDxProfitPct.toFixed(4)}%</span>`;
+
+    const dxBnbBadge = row.dxBnbProfitPct > 0
+      ? `<span class="badge badge-blue">+${row.dxBnbProfitPct.toFixed(4)}%</span>`
+      : `<span class="badge badge-red">${row.dxBnbProfitPct.toFixed(4)}%</span>`;
+
+    const bestPct  = row.best;
+    const bestBadge = bestPct > 0
+      ? `<span class="badge badge-green" style="font-size:11px">+${bestPct.toFixed(4)}%</span>`
+      : `<span class="badge badge-red" style="font-size:11px">${bestPct.toFixed(4)}%</span>`;
+
+    return `<tr>
+      <td><div class="symbol-cell">
+        <span class="symbol-name">${base}</span>
+        <span class="symbol-quote">${quote}</span>
+      </div></td>
+      <td style="color:#f0b90b">${fmtPrice(row.bnb.ask)}</td>
+      <td style="color:#a78bfa">${fmtPrice(row.dx.bid)}</td>
+      <td style="color:${bnbDxColor};font-weight:700">${fmtDiff(row.bnbDxProfit)}</td>
+      <td>${bnbDxBadge}</td>
+      <td style="color:#a78bfa">${fmtPrice(row.dx.ask)}</td>
+      <td style="color:#f0b90b">${fmtPrice(row.bnb.bid)}</td>
+      <td style="color:${dxBnbColor};font-weight:700">${fmtDiff(row.dxBnbProfit)}</td>
+      <td>${dxBnbBadge}</td>
+      <td>${bestBadge}</td>
+      <td>${bestPct > 0 ? '<span class="badge badge-green">Fırsat ✓</span>' : '<span class="badge badge-red">Negatif</span>'}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ════════════════════════════════════════════════════════════
+// Alert Logic
+// ════════════════════════════════════════════════════════════
+function getThreshold(sym) {
+  if (symbolRules[sym] !== undefined) return parseFloat(symbolRules[sym]);
+  return parseFloat(document.getElementById('alertThreshold').value) || 0.5;
+}
+
 function checkAlerts() {
-  const threshold = parseFloat(document.getElementById('alertThreshold').value) || 0.5;
   const now = new Date();
   let newCount = 0;
 
   for (const row of allData) {
     if (mutedSymbols.has(row.sym)) continue;
+    const threshold = getThreshold(row.sym);
     const triggers = [];
     if (row.bidDiffPct >= threshold) triggers.push({ type: 'Bid', pct: row.bidDiffPct });
     if (row.askDiffPct >= threshold) triggers.push({ type: 'Ask', pct: row.askDiffPct });
     if (!triggers.length) continue;
 
-    // deduplicate: skip if same symbol already logged in last 60s
     const recent = alertLog.find(a => a.sym === row.sym && (now - new Date(a.time)) < 60000);
     if (recent) continue;
 
     for (const t of triggers) {
-      const entry = {
-        time: now.toISOString(),
-        sym: row.sym,
-        trigger: t.type,
-        pct: t.pct.toFixed(4),
-        bnbMid: row.bnb.mid,
-        dxMid: row.dx.mid,
-        bidDiff: row.bidDiff,
-        askDiff: row.askDiff,
-        isNew: true
-      };
-      alertLog.unshift(entry);
+      alertLog.unshift({
+        time: now.toISOString(), sym: row.sym, trigger: t.type,
+        pct: t.pct.toFixed(4), threshold: threshold.toFixed(2),
+        bnbMid: row.bnb.mid, dxMid: row.dx.mid,
+        bidDiff: row.bidDiff, askDiff: row.askDiff, isNew: true
+      });
       newCount++;
-      toast(`⚠ ${row.sym} — ${t.type} farkı %${t.pct.toFixed(2)}`,
+      toast(`⚠ ${row.sym} — ${t.type} farkı %${t.pct.toFixed(2)} (eşik: %${threshold})`,
             `Binance: ${fmtPrice(row.bnb.mid)} | Darkex: ${fmtPrice(row.dx.mid)}`, 'err', 6000);
     }
   }
@@ -844,43 +852,33 @@ function checkAlerts() {
 function renderAlertTable(hasNew = false) {
   const el = document.getElementById('alertTableBody');
   if (!alertLog.length) {
-    el.innerHTML = '<tr><td colspan="8" class="alert-empty">Henüz anomali kaydı yok — %2+ fark oluşunca buraya düşer</td></tr>';
+    el.innerHTML = '<tr><td colspan="9" class="alert-empty">Henüz anomali kaydı yok</td></tr>';
     return;
   }
   el.innerHTML = alertLog.map((a, i) => {
     const t = new Date(a.time);
-    const timeStr = t.toLocaleDateString('tr-TR') + ' ' + t.toTimeString().slice(0,8);
-    const rowClass = (i === 0 && a.isNew) ? 'alert-row-new' : '';
-    const pctColor = parseFloat(a.pct) >= 5 ? '#f85149' : '#e3b341';
-    return `<tr class="${rowClass}">
-      <td style="color:#8b949e;font-size:11px">${timeStr}</td>
-      <td style="font-weight:700;color:#e6edf3">${a.sym}</td>
+    const ts = t.toLocaleDateString('tr-TR') + ' ' + t.toTimeString().slice(0, 8);
+    const pctN = parseFloat(a.pct);
+    const pctColor = pctN >= 5 ? '#f85149' : '#e3b341';
+    return `<tr class="${i===0&&a.isNew?'alert-row-new':''}">
+      <td style="color:#8b949e;font-size:11px">${ts}</td>
+      <td style="font-weight:700">${a.sym}</td>
       <td><span class="badge badge-red">${a.trigger}</span></td>
       <td style="color:${pctColor};font-weight:700">%${a.pct}</td>
+      <td style="color:#8b949e">%${a.threshold || '—'}</td>
       <td style="color:#f0b90b">${fmtPrice(a.bnbMid)}</td>
       <td style="color:#a78bfa">${fmtPrice(a.dxMid)}</td>
       <td style="color:${a.bidDiff>0?'#3fb950':'#f85149'}">${fmtDiff(a.bidDiff)}</td>
       <td style="color:${a.askDiff>0?'#3fb950':'#f85149'}">${fmtDiff(a.askDiff)}</td>
     </tr>`;
   }).join('');
-  // auto-open panel on first new alert
   if (hasNew && !alertPanelOpen) toggleAlertPanel();
 }
 
 function toggleAlertPanel() {
   alertPanelOpen = !alertPanelOpen;
-  document.getElementById('alertPanelBody').style.display = alertPanelOpen ? 'block' : 'none';
-  document.getElementById('alertPanelToggleHint').textContent = alertPanelOpen ? '▲ gizle' : '▼ göster';
-}
-
-function toggleMute(sym) {
-  if (mutedSymbols.has(sym)) {
-    mutedSymbols.delete(sym);
-  } else {
-    mutedSymbols.add(sym);
-  }
-  localStorage.setItem('mutedSymbols', JSON.stringify([...mutedSymbols]));
-  renderTable();
+  document.getElementById('alertPanelBody').style.display   = alertPanelOpen ? 'block' : 'none';
+  document.getElementById('alertToggleHint').textContent = alertPanelOpen ? '▲ gizle' : '▼ göster';
 }
 
 function clearAlertLog() {
@@ -890,26 +888,108 @@ function clearAlertLog() {
   renderAlertTable();
 }
 
-// ─── Toast ───────────────────────────────────────────────
-function toast(title, body, type = 'info', dur = 4000) {
+// ════════════════════════════════════════════════════════════
+// Mute
+// ════════════════════════════════════════════════════════════
+function toggleMute(sym) {
+  mutedSymbols.has(sym) ? mutedSymbols.delete(sym) : mutedSymbols.add(sym);
+  localStorage.setItem('mutedSymbols', JSON.stringify([...mutedSymbols]));
+  renderTable();
+}
+
+// ════════════════════════════════════════════════════════════
+// Alert Rules Modal
+// ════════════════════════════════════════════════════════════
+function openRulesModal() {
+  // sync global threshold
+  document.getElementById('modalGlobalThreshold').value =
+    document.getElementById('alertThreshold').value;
+
+  // populate symbol dropdown
+  const sel = document.getElementById('addRuleSym');
+  sel.innerHTML = '<option value="">— Symbol seç —</option>';
+  Object.keys(dxRaw).sort().forEach(sym => {
+    if (bnbRaw[sym]) {
+      const o = document.createElement('option');
+      o.value = sym; o.textContent = sym;
+      sel.appendChild(o);
+    }
+  });
+
+  renderRulesList();
+  document.getElementById('rulesModal').style.display = 'flex';
+}
+
+function closeRulesModal() {
+  document.getElementById('rulesModal').style.display = 'none';
+  renderTable(); // refresh bells
+}
+
+function syncGlobalThreshold(val) {
+  document.getElementById('alertThreshold').value = val;
+}
+
+function renderRulesList() {
+  const el = document.getElementById('rulesList');
+  const syms = Object.keys(symbolRules);
+  if (!syms.length) {
+    el.innerHTML = '<div style="color:#484f58;font-size:12px;padding:8px 0">Henüz sembol bazlı kural yok. Aşağıdan ekle.</div>';
+    return;
+  }
+  el.innerHTML = syms.sort().map(sym => `
+    <div class="rule-row">
+      <span class="rule-sym">${sym}</span>
+      <span style="color:#8b949e;font-size:11px">Eşik:</span>
+      <input class="rule-input" type="number" value="${symbolRules[sym]}" step="0.1" min="0"
+        onchange="updateRule('${sym}', this.value)">
+      <span style="color:#8b949e;font-size:11px">%</span>
+      <button class="rule-del" onclick="deleteRule('${sym}')">✕</button>
+    </div>`).join('');
+}
+
+function addRule() {
+  const sym = document.getElementById('addRuleSym').value;
+  const val = parseFloat(document.getElementById('addRuleVal').value);
+  if (!sym || isNaN(val) || val < 0) return;
+  symbolRules[sym] = val;
+  localStorage.setItem('symbolRules', JSON.stringify(symbolRules));
+  renderRulesList();
+  toast('Kural Eklendi', `${sym}: %${val} eşiği`, 'info');
+}
+
+function updateRule(sym, val) {
+  symbolRules[sym] = parseFloat(val);
+  localStorage.setItem('symbolRules', JSON.stringify(symbolRules));
+}
+
+function deleteRule(sym) {
+  delete symbolRules[sym];
+  localStorage.setItem('symbolRules', JSON.stringify(symbolRules));
+  renderRulesList();
+}
+
+// ════════════════════════════════════════════════════════════
+// Toast
+// ════════════════════════════════════════════════════════════
+function toast(title, body, type='info', dur=4000) {
   const c = document.getElementById('toasts');
   const t = document.createElement('div');
   t.className = 'toast ' + type;
-  t.innerHTML = `<b>${title}</b><br><span style="color:#8b949e">${body}</span>`;
+  t.innerHTML = `<b>${title}</b><br><span style="color:#8b949e;font-size:11px">${body}</span>`;
   c.appendChild(t);
   setTimeout(() => t.remove(), dur);
 }
 
-// ─── Polling ─────────────────────────────────────────────
-function startPolling() {
-  fetchAll();
-  fetchTimer = setInterval(fetchAll, INTERVAL * 1000);
-}
-
-// ─── Init ─────────────────────────────────────────────────
+// ════════════════════════════════════════════════════════════
+// Init
+// ════════════════════════════════════════════════════════════
 document.getElementById('hideSmall').addEventListener('change', applyFilters);
+document.getElementById('arbOnlyPositive').addEventListener('change', applyArbFilters);
 renderAlertTable();
-startPolling();
+
+// start polling
+fetchAll();
+fetchTimer = setInterval(fetchAll, INTERVAL * 1000);
 </script>
 </body>
 </html>
