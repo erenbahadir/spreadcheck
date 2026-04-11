@@ -328,6 +328,7 @@ tr:hover td { background:#161b22; }
       <button class="sort-btn" id="arbSortDxBnb"  onclick="setArbSort('dxbnb',this)">Al-Dx/Sat-Bnb</button>
       <button class="sort-btn" id="arbSortSym"    onclick="setArbSort('symbol',this)">Symbol</button>
     </div>
+    <div class="filter-group">Min log eşiği: <input type="number" id="arbMinLog" value="0" step="0.01" min="0" title="Bu %'nin üzerindeki fırsatlar loglanır"> %</div>
     <div style="margin-left:auto">
       <button class="refresh-btn" onclick="fetchAll()">↻ Yenile</button>
     </div>
@@ -368,6 +369,33 @@ tr:hover td { background:#161b22; }
       </tr></thead>
       <tbody id="arbTableBody"><tr><td colspan="11" class="no-data">Yükleniyor...</td></tr></tbody>
     </table>
+  </div>
+
+  <!-- Arb Log Panel -->
+  <div class="alert-panel" style="border-top-color:#a78bfa">
+    <div class="alert-panel-header" onclick="toggleArbPanel()">
+      <span style="color:#a78bfa;font-size:14px">⚡</span>
+      <span style="font-size:13px;font-weight:700;color:#a78bfa">Arbitraj Kayıtları</span>
+      <span class="alert-count-badge" id="arbLogBadge" style="background:#7c3aed">0</span>
+      <span style="color:#8b949e;font-size:11px" id="arbPanelHint">▼ göster</span>
+      <div class="alert-threshold-cfg" onclick="event.stopPropagation()">
+        <span style="font-size:11px;color:#8b949e">Sadece pozitif fırsatlar loglanır — eşiği yukarıdan ayarla</span>
+        <button class="alert-clear-btn" onclick="clearArbLog()">Temizle</button>
+      </div>
+    </div>
+    <div id="arbLogBody" style="display:none">
+      <div class="alert-table-wrap">
+        <table>
+          <thead><tr>
+            <th>Zaman</th><th>Symbol</th><th>Yön</th>
+            <th>Kâr ($)</th><th>Kâr (%)</th><th>Alış Fiyatı</th><th>Satış Fiyatı</th>
+          </tr></thead>
+          <tbody id="arbLogTableBody">
+            <tr><td colspan="7" class="alert-empty">Henüz arbitraj kaydı yok — pozitif fırsat oluşunca buraya düşer</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
   </div>
 
 </div><!-- /page-arb -->
@@ -430,9 +458,11 @@ let fetchTimer     = null;
 let currentPage    = 'spread';
 
 let alertLog       = JSON.parse(localStorage.getItem('alertLog')      || '[]');
+let arbLog         = JSON.parse(localStorage.getItem('arbLog')        || '[]');
 let mutedSymbols   = new Set(JSON.parse(localStorage.getItem('mutedSymbols') || '[]'));
-let symbolRules    = JSON.parse(localStorage.getItem('symbolRules')   || '{}'); // {BTCUSDT: 0.5}
+let symbolRules    = JSON.parse(localStorage.getItem('symbolRules')   || '{}');
 let alertPanelOpen = false;
+let arbPanelOpen   = false;
 
 // ════════════════════════════════════════════════════════════
 // Page switching
@@ -570,6 +600,7 @@ function buildArb() {
 
     arbData.push({ sym, bnb, dx, bnbDxProfit, bnbDxProfitPct, dxBnbProfit, dxBnbProfitPct, best });
   }
+  checkArbLog();
 }
 
 // ════════════════════════════════════════════════════════════
@@ -969,6 +1000,87 @@ function deleteRule(sym) {
 }
 
 // ════════════════════════════════════════════════════════════
+// Arb Log
+// ════════════════════════════════════════════════════════════
+function checkArbLog() {
+  const minPct = parseFloat(document.getElementById('arbMinLog')?.value) || 0;
+  const now = new Date();
+  let newCount = 0;
+
+  for (const row of arbData) {
+    const entries = [];
+    if (row.bnbDxProfitPct > minPct)
+      entries.push({ type: 'Al Bnb / Sat Dx', profit: row.bnbDxProfit, pct: row.bnbDxProfitPct, buyPrice: row.bnb.ask, sellPrice: row.dx.bid });
+    if (row.dxBnbProfitPct > minPct)
+      entries.push({ type: 'Al Dx / Sat Bnb', profit: row.dxBnbProfit, pct: row.dxBnbProfitPct, buyPrice: row.dx.ask, sellPrice: row.bnb.bid });
+    if (!entries.length) continue;
+
+    // deduplicate: same symbol within last 60s
+    const recent = arbLog.find(a => a.sym === row.sym && (now - new Date(a.time)) < 60000);
+    if (recent) continue;
+
+    for (const e of entries) {
+      arbLog.unshift({
+        time: now.toISOString(),
+        sym: row.sym,
+        type: e.type,
+        profit: e.profit,
+        pct: e.pct.toFixed(4),
+        buyPrice: e.buyPrice,
+        sellPrice: e.sellPrice,
+        isNew: true
+      });
+      newCount++;
+    }
+  }
+
+  if (arbLog.length > 500) arbLog.length = 500;
+  localStorage.setItem('arbLog', JSON.stringify(arbLog));
+  const badge = document.getElementById('arbLogBadge');
+  if (badge) badge.textContent = arbLog.length;
+  renderArbLog(newCount > 0);
+}
+
+function renderArbLog(hasNew = false) {
+  const el = document.getElementById('arbLogTableBody');
+  if (!el) return;
+  if (!arbLog.length) {
+    el.innerHTML = '<tr><td colspan="7" class="alert-empty">Henüz arbitraj kaydı yok — pozitif fırsat oluşunca buraya düşer</td></tr>';
+    return;
+  }
+  el.innerHTML = arbLog.map((a, i) => {
+    const t = new Date(a.time);
+    const ts = t.toLocaleDateString('tr-TR') + ' ' + t.toTimeString().slice(0, 8);
+    const isAlBnb = a.type.includes('Bnb / Sat Dx');
+    const typeColor = isAlBnb ? '#f0b90b' : '#a78bfa';
+    const pctN = parseFloat(a.pct);
+    return `<tr class="${i === 0 && a.isNew ? 'alert-row-new' : ''}">
+      <td style="color:#8b949e;font-size:11px;white-space:nowrap">${ts}</td>
+      <td style="font-weight:700">${a.sym}</td>
+      <td style="color:${typeColor};font-size:11px;font-weight:600">${a.type}</td>
+      <td style="color:#3fb950;font-weight:700">+${fmtPrice(a.profit)}</td>
+      <td style="color:#3fb950;font-weight:700">+${a.pct}%</td>
+      <td style="color:#8b949e">${fmtPrice(a.buyPrice)}</td>
+      <td style="color:#8b949e">${fmtPrice(a.sellPrice)}</td>
+    </tr>`;
+  }).join('');
+  if (hasNew && !arbPanelOpen) toggleArbPanel();
+}
+
+function toggleArbPanel() {
+  arbPanelOpen = !arbPanelOpen;
+  document.getElementById('arbLogBody').style.display    = arbPanelOpen ? 'block' : 'none';
+  document.getElementById('arbPanelHint').textContent = arbPanelOpen ? '▲ gizle' : '▼ göster';
+}
+
+function clearArbLog() {
+  arbLog = [];
+  localStorage.removeItem('arbLog');
+  document.getElementById('arbLogBadge').textContent = '0';
+  renderArbLog();
+}
+
+// ════════════════════════════════════════════════════════════
 // Toast
 // ════════════════════════════════════════════════════════════
 function toast(title, body, type='info', dur=4000) {
@@ -986,6 +1098,7 @@ function toast(title, body, type='info', dur=4000) {
 document.getElementById('hideSmall').addEventListener('change', applyFilters);
 document.getElementById('arbOnlyPositive').addEventListener('change', applyArbFilters);
 renderAlertTable();
+renderArbLog();
 
 // start polling
 fetchAll();
