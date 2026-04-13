@@ -170,6 +170,12 @@ tr:hover td { background:#161b22; }
 /* page visibility */
 .page-content { display:none; }
 .page-content.active { display:block; }
+
+/* Cross-exchange */
+.ex-chip { display:inline-block; padding:1px 6px; border-radius:3px; font-size:10px; font-weight:600; margin:1px 2px; white-space:nowrap; }
+.ex-row { display:flex; flex-wrap:wrap; gap:3px; justify-content:flex-end; }
+.cross-pair { font-weight:700; font-size:11px; padding:2px 7px; border-radius:4px; display:inline-block; }
+.cross-log-wrap { max-height:220px; overflow-y:auto; }
 </style>
 </head>
 <body>
@@ -206,8 +212,9 @@ tr:hover td { background:#161b22; }
 
 <!-- PAGE TABS -->
 <div class="page-tabs">
-  <div class="page-tab active" id="tabSpread" onclick="switchPage('spread')">📊 Spread Monitor</div>
+  <div class="page-tab active" id="tabSpread" onclick="switchPage('spread')">📊 Spread</div>
   <div class="page-tab arb-tab" id="tabArb" onclick="switchPage('arb')">⚡ Arbitraj</div>
+  <div class="page-tab" id="tabCross" onclick="switchPage('cross')" style="border-bottom-color:#17e6a1">🌐 Cross-Exchange</div>
 </div>
 
 <!-- SUMMARY (shared) -->
@@ -400,6 +407,73 @@ tr:hover td { background:#161b22; }
 
 </div><!-- /page-arb -->
 
+<!-- ═══════════════════════════════════════════════ PAGE 3: CROSS ═══ -->
+<div class="page-content" id="page-cross">
+
+  <div class="controls">
+    <div class="search-wrap">
+      <span class="search-icon">⌕</span>
+      <input type="text" id="crossSearch" placeholder="Symbol ara..." oninput="applyCrossFilters()">
+    </div>
+    <div class="filter-group">Min fark: <input type="number" id="crossMinPct" value="0.3" step="0.05" min="0" oninput="applyCrossFilters()"> %</div>
+    <div style="display:flex;gap:4px;">
+      <button class="qbtn active" onclick="setCrossQuote('ALL',this)">Tümü</button>
+      <button class="qbtn" onclick="setCrossQuote('USDT',this)">USDT</button>
+      <button class="qbtn" onclick="setCrossQuote('USDC',this)">USDC</button>
+    </div>
+    <div style="display:flex;gap:4px;font-size:11px;color:#8b949e;align-items:center">
+      Sırala:
+      <button class="sort-btn active" id="crossSortPct" onclick="setCrossSort('pct',this)">Fark %</button>
+      <button class="sort-btn" id="crossSortSym" onclick="setCrossSort('symbol',this)">Symbol</button>
+    </div>
+    <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
+      <span style="font-size:11px;color:#8b949e" id="crossStatusMsg">—</span>
+      <button class="refresh-btn" onclick="fetchCross()">↻ Yenile</button>
+    </div>
+  </div>
+
+  <!-- Exchange status -->
+  <div class="status-bar" id="crossStatusBar" style="flex-wrap:wrap;gap:10px">
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr>
+        <th onclick="setCrossSort('symbol',document.getElementById('crossSortSym'))">Symbol <span class="arrow" id="arrcross-symbol"></span></th>
+        <th>En Düşük</th>
+        <th>En Yüksek</th>
+        <th onclick="setCrossSort('pct',document.getElementById('crossSortPct'))">Fark % <span class="arrow" id="arrcross-pct">↓</span></th>
+        <th>Fark ($)</th>
+        <th>Borsa Çifti</th>
+        <th style="min-width:200px">Tüm Borsalar</th>
+      </tr></thead>
+      <tbody id="crossTableBody"><tr><td colspan="7" class="no-data">🌐 Cross-Exchange sekmesine girin ve yükleyin</td></tr></tbody>
+    </table>
+  </div>
+
+  <!-- Cross Log -->
+  <div class="alert-panel" style="border-top-color:#17e6a1">
+    <div class="alert-panel-header" onclick="toggleCrossPanel()">
+      <span style="color:#17e6a1;font-size:14px">🌐</span>
+      <span style="font-size:13px;font-weight:700;color:#17e6a1">Cross-Exchange Anomali Kayıtları</span>
+      <span class="alert-count-badge" id="crossLogBadge" style="background:#0d9668">0</span>
+      <span style="color:#8b949e;font-size:11px" id="crossPanelHint">▼ göster</span>
+      <div class="alert-threshold-cfg" onclick="event.stopPropagation()">
+        <button class="alert-clear-btn" onclick="clearCrossLog()">Temizle</button>
+      </div>
+    </div>
+    <div id="crossLogBody" style="display:none">
+      <div class="cross-log-wrap">
+        <table>
+          <thead><tr><th>Zaman</th><th>Symbol</th><th>Düşük</th><th>Yüksek</th><th>Fark %</th><th>Fark $</th></tr></thead>
+          <tbody id="crossLogTableBody"><tr><td colspan="6" class="alert-empty">Henüz kayıt yok</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /page-cross -->
+
 <!-- ═══════════════════════════════ ALERT RULES MODAL ═══ -->
 <div class="modal-overlay" id="rulesModal" style="display:none" onclick="if(event.target===this)closeRulesModal()">
   <div class="modal">
@@ -459,6 +533,31 @@ let currentPage    = 'spread';
 
 let alertLog       = JSON.parse(localStorage.getItem('alertLog')      || '[]');
 let arbLog         = JSON.parse(localStorage.getItem('arbLog')        || '[]');
+let crossLog       = JSON.parse(localStorage.getItem('crossLog')      || '[]');
+let crossData      = [];
+let crossFiltered  = [];
+let crossQuoteFilter = 'ALL';
+let crossSortKey   = 'pct';
+let crossSortDir   = -1;
+let crossPanelOpen = false;
+let crossExRaw     = {}; // { exchangeId: { SYM: {bid,ask,mid} } }
+
+const CROSS_EXCHANGES = [
+  { id:'binance', name:'Binance',  color:'#f0b90b', url:'https://fapi.binance.com/fapi/v1/ticker/bookTicker',
+    parse: d => d.map(t=>({ sym:t.symbol, bid:+t.bidPrice, ask:+t.askPrice })) },
+  { id:'darkex',  name:'Darkex',   color:'#a78bfa', url:'https://trade-api.darkex.live/fapi/v1/ticker/bookTicker',
+    parse: d => d.map(t=>({ sym:t.symbol, bid:+t.bidPrice, ask:+t.askPrice })) },
+  { id:'bybit',   name:'Bybit',    color:'#f7a600', url:'https://api.bybit.com/v5/market/tickers?category=linear',
+    parse: d => d.result.list.map(t=>({ sym:t.symbol, bid:+t.bid1Price, ask:+t.ask1Price })) },
+  { id:'okx',     name:'OKX',      color:'#00d4aa', url:'https://www.okx.com/api/v5/market/tickers?instType=SWAP',
+    parse: d => d.data.map(t=>({ sym:t.instId.replace(/-SWAP$/,'').replace(/-/g,''), bid:+t.bidPx, ask:+t.askPx })) },
+  { id:'mexc',    name:'MEXC',     color:'#1ece9f', url:'https://api.mexc.com/api/v3/ticker/bookTicker',
+    parse: d => d.map(t=>({ sym:t.symbol, bid:+t.bidPrice, ask:+t.askPrice })) },
+  { id:'gateio',  name:'Gate.io',  color:'#17e6a1', url:'https://api.gateio.ws/api/v4/futures/usdt/tickers',
+    parse: d => d.map(t=>({ sym:t.contract.replace(/_/g,''), bid:+t.highest_bid, ask:+t.lowest_ask })) },
+  { id:'kucoin',  name:'KuCoin',   color:'#23af91', url:'https://api.kucoin.com/api/v1/market/allTickers',
+    parse: d => d.data.ticker.map(t=>({ sym:t.symbolName.replace(/-/g,''), bid:+t.buy, ask:+t.sell })) },
+];
 let mutedSymbols   = new Set(JSON.parse(localStorage.getItem('mutedSymbols') || '[]'));
 let symbolRules    = JSON.parse(localStorage.getItem('symbolRules')   || '{}');
 let alertPanelOpen = false;
@@ -473,6 +572,7 @@ function switchPage(page) {
   document.querySelectorAll('.page-content').forEach(p => p.classList.remove('active'));
   document.getElementById('tab' + page.charAt(0).toUpperCase() + page.slice(1)).classList.add('active');
   document.getElementById('page-' + page).classList.add('active');
+  if (page === 'cross' && !crossData.length) fetchCross();
 }
 
 // ════════════════════════════════════════════════════════════
@@ -535,6 +635,8 @@ async function fetchAll() {
   updateSummary();
   applyFilters();
   applyArbFilters();
+  // Cross-exchange is fetched separately (more endpoints, heavier)
+  if (currentPage === 'cross') fetchCross();
   document.getElementById('hLastUpdate').textContent = 'Son: ' + new Date().toTimeString().slice(0, 8);
   document.getElementById('loading').style.display = 'none';
   startCountdown();
@@ -1081,6 +1183,223 @@ function clearArbLog() {
 }
 
 // ════════════════════════════════════════════════════════════
+// Cross-Exchange
+// ════════════════════════════════════════════════════════════
+async function fetchCross() {
+  crossExRaw = {};
+  const statusBar = document.getElementById('crossStatusBar');
+  statusBar.innerHTML = CROSS_EXCHANGES.map(ex =>
+    `<div class="status-item"><div class="pulse" id="cx-${ex.id}"></div><span style="color:${ex.color};font-weight:600">${ex.name}: <span id="cxs-${ex.id}" style="color:#8b949e">...</span></span></div>`
+  ).join('');
+
+  const results = await Promise.allSettled(
+    CROSS_EXCHANGES.map(async ex => {
+      const t0 = Date.now();
+      const r = await fetch(ex.url);
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      const data = await r.json();
+      const ms = Date.now() - t0;
+      return { ex, data, ms };
+    })
+  );
+
+  let totalSymbols = 0;
+  results.forEach(res => {
+    const exId = res.status === 'fulfilled' ? res.value.ex.id : null;
+    if (res.status === 'fulfilled') {
+      const { ex, data, ms } = res.value;
+      try {
+        const parsed = ex.parse(data);
+        crossExRaw[ex.id] = {};
+        parsed.forEach(t => {
+          if (t.bid > 0 && t.ask > 0) {
+            crossExRaw[ex.id][t.sym] = { bid: t.bid, ask: t.ask, mid: (t.bid + t.ask) / 2 };
+          }
+        });
+        const count = Object.keys(crossExRaw[ex.id]).length;
+        totalSymbols += count;
+        setCrossStatus(ex.id, true, count + ' çift, ' + ms + 'ms');
+      } catch(e) {
+        setCrossStatus(ex.id, false, 'Parse hatası');
+      }
+    } else {
+      // find exchange from index
+      const ex = CROSS_EXCHANGES[results.indexOf(res)];
+      setCrossStatus(ex.id, false, res.reason?.message || 'Hata');
+    }
+  });
+
+  buildCross();
+  applyCrossFilters();
+}
+
+function setCrossStatus(exId, ok, msg) {
+  const p = document.getElementById('cx-' + exId);
+  const s = document.getElementById('cxs-' + exId);
+  if (p) p.className = 'pulse' + (ok ? '' : ' err');
+  if (s) { s.textContent = ok ? msg : 'HATA: ' + msg; s.style.color = ok ? '#3fb950' : '#f85149'; }
+}
+
+function buildCross() {
+  // Build symbol → [{exId, name, color, bid, ask, mid}]
+  const symMap = {};
+  for (const ex of CROSS_EXCHANGES) {
+    const data = crossExRaw[ex.id];
+    if (!data) continue;
+    for (const [sym, val] of Object.entries(data)) {
+      if (!symMap[sym]) symMap[sym] = [];
+      symMap[sym].push({ id: ex.id, name: ex.name, color: ex.color, ...val });
+    }
+  }
+
+  crossData = [];
+  const now = new Date();
+  const minLogPct = parseFloat(document.getElementById('crossMinPct')?.value) || 0.3;
+
+  for (const [sym, exchanges] of Object.entries(symMap)) {
+    if (exchanges.length < 2) continue;
+
+    let minEx = exchanges[0], maxEx = exchanges[0];
+    for (const ex of exchanges) {
+      if (ex.mid < minEx.mid) minEx = ex;
+      if (ex.mid > maxEx.mid) maxEx = ex;
+    }
+    if (minEx.mid <= 0) continue;
+
+    const diff = maxEx.mid - minEx.mid;
+    const pct = (diff / minEx.mid) * 100;
+
+    crossData.push({ sym, exchanges, minEx, maxEx, diff, pct });
+
+    // Log anomalies
+    if (pct >= minLogPct) {
+      const recent = crossLog.find(a => a.sym === sym && (now - new Date(a.time)) < 60000);
+      if (!recent) {
+        crossLog.unshift({
+          time: now.toISOString(), sym,
+          lowEx: minEx.name, lowPrice: minEx.mid,
+          highEx: maxEx.name, highPrice: maxEx.mid,
+          pct: pct.toFixed(4), diff
+        });
+      }
+    }
+  }
+
+  if (crossLog.length > 500) crossLog.length = 500;
+  localStorage.setItem('crossLog', JSON.stringify(crossLog));
+  document.getElementById('crossLogBadge').textContent = crossLog.length;
+  renderCrossLog();
+}
+
+function applyCrossFilters() {
+  const search = document.getElementById('crossSearch').value.toUpperCase();
+  const minPct = parseFloat(document.getElementById('crossMinPct').value) || 0;
+
+  crossFiltered = crossData.filter(r => {
+    if (search && !r.sym.includes(search)) return false;
+    if (crossQuoteFilter !== 'ALL' && !r.sym.endsWith(crossQuoteFilter)) return false;
+    if (r.pct < minPct) return false;
+    return true;
+  });
+
+  crossFiltered.sort((a, b) => {
+    if (crossSortKey === 'symbol') return crossSortDir * a.sym.localeCompare(b.sym);
+    return crossSortDir * (a.pct - b.pct);
+  });
+
+  document.getElementById('crossStatusMsg').textContent =
+    crossFiltered.length + ' anomali / ' + crossData.length + ' toplam çift';
+  renderCrossTable();
+}
+
+function setCrossQuote(q, el) {
+  crossQuoteFilter = q;
+  document.querySelectorAll('#page-cross .qbtn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  applyCrossFilters();
+}
+
+function setCrossSort(key, el) {
+  crossSortKey = key;
+  crossSortDir = (el?.classList.contains('active')) ? crossSortDir * -1 : -1;
+  if (key === 'symbol') crossSortDir = Math.abs(crossSortDir);
+  document.querySelectorAll('#page-cross .sort-btn').forEach(b => b.classList.remove('active'));
+  el?.classList.add('active');
+  ['symbol','pct'].forEach(k => {
+    const a = document.getElementById('arrcross-' + k);
+    if (a) a.textContent = k === key ? (crossSortDir === -1 ? '↓' : '↑') : '';
+  });
+  applyCrossFilters();
+}
+
+function renderCrossTable() {
+  const el = document.getElementById('crossTableBody');
+  if (!crossFiltered.length) {
+    el.innerHTML = '<tr><td colspan="7" class="no-data">Eşiğin üzerinde anomali bulunamadı</td></tr>';
+    return;
+  }
+
+  el.innerHTML = crossFiltered.map(row => {
+    const { base, quote } = parseQuote(row.sym);
+    const color = row.pct < 0.5 ? '#e3b341' : '#f85149';
+
+    const allChips = row.exchanges
+      .sort((a, b) => a.mid - b.mid)
+      .map(ex => `<span class="ex-chip" style="background:${ex.color}22;color:${ex.color};border:1px solid ${ex.color}44">${ex.name} ${fmtPrice(ex.mid)}</span>`)
+      .join('');
+
+    return `<tr>
+      <td><div class="symbol-cell">
+        <span class="symbol-name">${base}</span>
+        <span class="symbol-quote">${quote}</span>
+        <span style="color:#484f58;font-size:10px">(${row.exchanges.length})</span>
+      </div></td>
+      <td style="font-weight:600"><span style="color:${row.minEx.color}">${row.minEx.name}</span><br><span style="color:#3fb950">${fmtPrice(row.minEx.mid)}</span></td>
+      <td style="font-weight:600"><span style="color:${row.maxEx.color}">${row.maxEx.name}</span><br><span style="color:#f85149">${fmtPrice(row.maxEx.mid)}</span></td>
+      <td style="color:${color};font-weight:700">${row.pct.toFixed(4)}%</td>
+      <td style="color:${color}">${fmtDiff(row.diff)}</td>
+      <td><span class="cross-pair" style="background:${row.minEx.color}22;color:${row.minEx.color}">${row.minEx.name}</span> ⟷ <span class="cross-pair" style="background:${row.maxEx.color}22;color:${row.maxEx.color}">${row.maxEx.name}</span></td>
+      <td><div class="ex-row">${allChips}</div></td>
+    </tr>`;
+  }).join('');
+}
+
+function renderCrossLog() {
+  const el = document.getElementById('crossLogTableBody');
+  if (!el) return;
+  if (!crossLog.length) {
+    el.innerHTML = '<tr><td colspan="6" class="alert-empty">Henüz kayıt yok — fark oluşunca otomatik loglanır</td></tr>';
+    return;
+  }
+  el.innerHTML = crossLog.map((a, i) => {
+    const t = new Date(a.time);
+    const ts = t.toLocaleDateString('tr-TR') + ' ' + t.toTimeString().slice(0, 8);
+    const pctColor = parseFloat(a.pct) >= 1 ? '#f85149' : '#e3b341';
+    return `<tr>
+      <td style="color:#8b949e;font-size:11px;white-space:nowrap">${ts}</td>
+      <td style="font-weight:700">${a.sym}</td>
+      <td style="font-size:11px">${a.lowEx} <span style="color:#3fb950">${fmtPrice(a.lowPrice)}</span></td>
+      <td style="font-size:11px">${a.highEx} <span style="color:#f85149">${fmtPrice(a.highPrice)}</span></td>
+      <td style="color:${pctColor};font-weight:700">%${a.pct}</td>
+      <td style="color:${pctColor}">${fmtDiff(a.diff)}</td>
+    </tr>`;
+  }).join('');
+}
+
+function toggleCrossPanel() {
+  crossPanelOpen = !crossPanelOpen;
+  document.getElementById('crossLogBody').style.display = crossPanelOpen ? 'block' : 'none';
+  document.getElementById('crossPanelHint').textContent = crossPanelOpen ? '▲ gizle' : '▼ göster';
+}
+
+function clearCrossLog() {
+  crossLog = [];
+  localStorage.removeItem('crossLog');
+  document.getElementById('crossLogBadge').textContent = '0';
+  renderCrossLog();
+}
+
+// ════════════════════════════════════════════════════════════
 // Toast
 // ════════════════════════════════════════════════════════════
 function toast(title, body, type='info', dur=4000) {
@@ -1099,6 +1418,7 @@ document.getElementById('hideSmall').addEventListener('change', applyFilters);
 document.getElementById('arbOnlyPositive').addEventListener('change', applyArbFilters);
 renderAlertTable();
 renderArbLog();
+renderCrossLog();
 
 // start polling
 fetchAll();
